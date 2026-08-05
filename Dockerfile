@@ -1,7 +1,9 @@
 ### Multi-stage Dockerfile for building the React frontend and serving via nginx
-FROM node:18-alpine AS build
-WORKDIR /app
+FROM node:20-alpine AS build
+ARG VITE_API_BASE_URL=/api/v1
 ENV NODE_ENV=production
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
@@ -11,8 +13,17 @@ RUN npm ci --legacy-peer-deps
 COPY . .
 RUN npm run build
 
-FROM nginx:stable-alpine AS production
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+FROM node:20-alpine AS production
+WORKDIR /usr/src/app
+
+# Install a minimal static server
+RUN npm install -g serve --silent
+
+# Copy built assets
+COPY --from=build /app/dist ./
+
+ENV PORT=80
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+
+# Serve single-page app from the build directory
+CMD ["serve", "-s", ".", "-l", "80"]

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import auth from "@/api/authClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
-import AuthSplitLayout from "@/components/auth/AuthSplitLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import AuthSplitLayout from "@/components/auth/AuthSplitLayout";
 import { safeReturnTo } from "@/lib/authReturnTo";
 
 export default function Login() {
@@ -15,6 +15,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
   const returnTo = safeReturnTo();
 
   const handleSubmit = async (e) => {
@@ -23,7 +24,7 @@ export default function Login() {
     setLoading(true);
     try {
       await auth.loginViaEmailPassword(email, password);
-      window.location.href = returnTo;
+      navigate(returnTo, { replace: true });
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
@@ -141,12 +142,12 @@ export default function Login() {
         </Button>
       </form>
 
-      <div className="relative my-6">
+      <div className="relative my-5">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="bg-white px-3 text-gray-400">or continue with</span>
+          <span className="bg-white px-3 text-gray-400">or</span>
         </div>
       </div>
 

@@ -23,13 +23,13 @@ export const WishlistProvider = ({ children }) => {
   }, [isAuthenticated]);
 
   const addToWishlist = async (productId) => {
-    const data = await api.post("/wishlist/add", { productId });
+    const data = await api.post(`/wishlist/${productId}`);
     await fetchWishlist();
     return data;
   };
 
   const removeFromWishlist = async (productId) => {
-    const data = await api.delete(`/wishlist/remove/${productId}`);
+    const data = await api.delete(`/wishlist/${productId}`);
     await fetchWishlist();
     return data;
   };

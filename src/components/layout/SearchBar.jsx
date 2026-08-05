@@ -1,18 +1,18 @@
-import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, X } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Search, X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
 export default function SearchBar() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef(null);
   const navigate = useNavigate();
 
   const { data: suggestions } = useQuery({
-    queryKey: ['search-suggestions', query],
-    queryFn: () => api.get('/products/search/suggestions', { q: query }),
+    queryKey: ["search-suggestions", query],
+    queryFn: () => api.get("/products/autocomplete", { q: query }),
     enabled: query.length >= 2,
     staleTime: 30000,
   });
@@ -26,18 +26,21 @@ export default function SearchBar() {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter') handleSearch();
-    if (e.key === 'Escape') setShowSuggestions(false);
+    if (e.key === "Enter") handleSearch();
+    if (e.key === "Escape") setShowSuggestions(false);
   };
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (inputRef.current && !inputRef.current.closest('.search-container')?.contains(e.target)) {
+      if (
+        inputRef.current &&
+        !inputRef.current.closest(".search-container")?.contains(e.target)
+      ) {
         setShowSuggestions(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -46,14 +49,23 @@ export default function SearchBar() {
         <input
           type="text"
           value={query}
-          onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setShowSuggestions(true);
+          }}
           onFocus={() => query.length >= 2 && setShowSuggestions(true)}
           onKeyDown={handleKeyDown}
           placeholder="Search for products, brands and more..."
           className="flex-1 px-4 py-2.5 text-sm focus:outline-none text-[#111827] placeholder-gray-400"
         />
         {query && (
-          <button onClick={() => { setQuery(''); setShowSuggestions(false); }} className="px-2 text-gray-400 hover:text-gray-600">
+          <button
+            onClick={() => {
+              setQuery("");
+              setShowSuggestions(false);
+            }}
+            className="px-2 text-gray-400 hover:text-gray-600"
+          >
             <X size={16} />
           </button>
         )}
@@ -74,7 +86,10 @@ export default function SearchBar() {
           {suggestionList.map((s, i) => (
             <button
               key={i}
-              onClick={() => { setQuery(s); handleSearch(s); }}
+              onClick={() => {
+                setQuery(s);
+                handleSearch(s);
+              }}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-orange-50 transition-colors"
             >
               <Search size={14} className="text-gray-400 flex-shrink-0" />

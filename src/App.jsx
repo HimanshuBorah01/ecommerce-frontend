@@ -1,41 +1,43 @@
-import { Toaster } from "@/components/ui/toaster"
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { AuthProvider, useAuth } from '@/lib/AuthContext';
-import { CartProvider } from '@/contexts/CartContext';
-import { WishlistProvider } from '@/contexts/WishlistContext';
-import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-import ScrollToTop from './components/ScrollToTop';
-import MainLayout from '@/components/layout/MainLayout';
-import Home from '@/pages/Home';
-import SearchResults from '@/pages/SearchResults';
-import Categories from '@/pages/Categories';
-import ProductDetail from '@/pages/ProductDetail';
-import Cart from '@/pages/Cart';
-import Checkout from '@/pages/Checkout';
-import Wishlist from '@/pages/Wishlist';
-import AccountLayout from '@/components/layout/AccountLayout';
-import Dashboard from '@/pages/account/Dashboard';
-import Orders from '@/pages/account/Orders';
-import OrderDetail from '@/pages/account/OrderDetail';
-import Addresses from '@/pages/account/Addresses';
-import Profile from '@/pages/account/Profile';
-import ChangePassword from '@/pages/account/ChangePassword';
-import ChangeEmail from '@/pages/account/ChangeEmail';
-import NotificationSettings from '@/pages/account/NotificationSettings';
-import InfoPage from '@/pages/InfoPage';
-import HelpCenter from '@/pages/HelpCenter';
-import ServerError from '@/pages/ServerError';
-import NotFound from '@/pages/NotFound';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
+import { Toaster } from "@/components/ui/toaster";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClientInstance } from "@/lib/query-client";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { AuthProvider, useAuth } from "@/lib/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
+import { WishlistProvider } from "@/contexts/WishlistContext";
+import UserNotRegisteredError from "@/components/UserNotRegisteredError";
+import ScrollToTop from "./components/ScrollToTop";
+import MainLayout from "@/components/layout/MainLayout";
+import Home from "@/pages/Home";
+import SearchResults from "@/pages/SearchResults";
+import Categories from "@/pages/Categories";
+import ProductDetail from "@/pages/ProductDetail";
+import Cart from "@/pages/Cart";
+import Checkout from "@/pages/Checkout";
+import Wishlist from "@/pages/Wishlist";
+import AccountLayout from "@/components/layout/AccountLayout";
+import Dashboard from "@/pages/account/Dashboard";
+import Orders from "@/pages/account/Orders";
+import OrderDetail from "@/pages/account/OrderDetail";
+import Addresses from "@/pages/account/Addresses";
+import Profile from "@/pages/account/Profile";
+import ChangePassword from "@/pages/account/ChangePassword";
+import ChangeEmail from "@/pages/account/ChangeEmail";
+import NotificationSettings from "@/pages/account/NotificationSettings";
+import InfoPage from "@/pages/InfoPage";
+import HelpCenter from "@/pages/HelpCenter";
+import ServerError from "@/pages/ServerError";
+import NotFound from "@/pages/NotFound";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
+import VerifyEmail from "@/pages/VerifyEmail";
 // Add page imports here
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } =
+    useAuth();
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -48,9 +50,9 @@ const AuthenticatedApp = () => {
 
   // Handle authentication errors
   if (authError) {
-    if (authError.type === 'user_not_registered') {
+    if (authError.type === "user_not_registered") {
       return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
+    } else if (authError.type === "auth_required") {
       // Redirect to login automatically
       navigateToLogin();
       return null;
@@ -65,6 +67,7 @@ const AuthenticatedApp = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       {/* Main app pages */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
@@ -95,9 +98,7 @@ const AuthenticatedApp = () => {
   );
 };
 
-
 function App() {
-
   return (
     <AuthProvider>
       <CartProvider>
@@ -112,7 +113,7 @@ function App() {
         </WishlistProvider>
       </CartProvider>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+export default App;

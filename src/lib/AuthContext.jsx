@@ -50,35 +50,29 @@ export const AuthProvider = ({ children }) => {
         }
         setIsLoadingPublicSettings(false);
       } catch (appError) {
-        console.error("App state check failed:", appError);
-
-        // Handle app-level errors
-        if (appError.status === 403 && appError.data?.extra_data?.reason) {
-          const reason = appError.data.extra_data.reason;
-          if (reason === "auth_required") {
-            setAuthError({
-              type: "auth_required",
-              message: "Authentication required",
-            });
-          } else if (reason === "user_not_registered") {
-            setAuthError({
-              type: "user_not_registered",
-              message: "User not registered for this app",
-            });
+        console.warn(
+          "App state check failed (optional):",
+          appError?.message || appError,
+        );
+        // If the apps public endpoint is not present (404) or network error,
+        // treat app public settings as optional and continue to check user auth.
+        try {
+          if (appParams.token) {
+            await checkUserAuth();
           } else {
-            setAuthError({
-              type: reason,
-              message: appError.message,
-            });
+            setIsLoadingAuth(false);
+            setIsAuthenticated(false);
+            setAuthChecked(true);
           }
-        } else {
+        } catch (e) {
+          // If user auth check fails, fall through to set the error state below.
+          console.error("User auth check after app failure failed:", e);
           setAuthError({
             type: "unknown",
-            message: appError.message || "Failed to load app",
+            message: e.message || "Failed to authenticate",
           });
         }
         setIsLoadingPublicSettings(false);
-        setIsLoadingAuth(false);
       }
     } catch (error) {
       console.error("Unexpected error:", error);

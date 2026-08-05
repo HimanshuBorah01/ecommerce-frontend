@@ -37,13 +37,13 @@ export const CartProvider = ({ children }) => {
   };
 
   const updateQuantity = async (itemId, quantity) => {
-    const data = await api.put(`/cart/update/${itemId}`, { quantity });
+    const data = await api.put(`/cart/${itemId}`, { quantity });
     setCart(data?.cart || data);
     return data;
   };
 
   const removeItem = async (itemId) => {
-    const data = await api.delete(`/cart/remove/${itemId}`);
+    const data = await api.delete(`/cart/${itemId}`);
     setCart(data?.cart || data);
     return data;
   };

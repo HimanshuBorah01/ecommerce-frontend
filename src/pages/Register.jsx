@@ -5,11 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Loader2, Eye, EyeOff, User, Phone } from "lucide-react";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
 import AuthSplitLayout from "@/components/auth/AuthSplitLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
@@ -23,8 +18,7 @@ export default function Register() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showOtp, setShowOtp] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
+  const [showVerificationSent, setShowVerificationSent] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [agree, setAgree] = useState(false);
@@ -42,26 +36,16 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      await auth.register({ email, password });
-      setShowOtp(true);
+      await auth.register({
+        name: fullName,
+        email,
+        phone,
+        password,
+        confirmPassword,
+      });
+      setShowVerificationSent(true);
     } catch (err) {
       setError(err.message || "Registration failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerify = async () => {
-    setError("");
-    setLoading(true);
-    try {
-      const result = await auth.verifyOtp({ email, otpCode });
-      if (result?.access_token) {
-        auth.setToken(result.access_token);
-      }
-      window.location.href = safeReturnTo();
-    } catch (err) {
-      setError(err.message || "Invalid verification code");
     } finally {
       setLoading(false);
     }
@@ -70,13 +54,13 @@ export default function Register() {
   const handleResend = async () => {
     setError("");
     try {
-      await auth.resendOtp(email);
+      await auth.resendVerificationEmail(email);
       toast({
-        title: "Code sent",
-        description: "Check your email for the new code.",
+        title: "Email sent",
+        description: "Check your inbox for the verification link.",
       });
     } catch (err) {
-      setError(err.message || "Failed to resend code");
+      setError(err.message || "Failed to resend verification email");
     }
   };
 
@@ -84,59 +68,49 @@ export default function Register() {
     auth.loginWithProvider("google", safeReturnTo());
   };
 
-  if (showOtp) {
+  if (showVerificationSent) {
     return (
       <AuthSplitLayout
         title="Verify your email"
-        subtitle={`We sent a code to ${email}`}
+        subtitle={`We sent a verification link to ${email}`}
         sideTitle="Almost there!"
-        sideSubtitle="Just one more step to start shopping on Shopy."
+        sideSubtitle="Check your inbox and click the link to verify your account."
       >
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm border border-red-100">
             {error}
           </div>
         )}
-        <div className="flex justify-center mb-6">
-          <InputOTP
-            maxLength={6}
-            value={otpCode}
-            onChange={setOtpCode}
-            autoFocus
-            autoComplete="one-time-code"
-          >
-            <InputOTPGroup>
-              <InputOTPSlot index={0} />
-              <InputOTPSlot index={1} />
-              <InputOTPSlot index={2} />
-              <InputOTPSlot index={3} />
-              <InputOTPSlot index={4} />
-              <InputOTPSlot index={5} />
-            </InputOTPGroup>
-          </InputOTP>
+        <div className="mb-6 text-sm text-gray-600">
+          <p>
+            A verification link has been sent to <strong>{email}</strong>.
+          </p>
+          <p>
+            Please open your email and click the link to complete registration.
+          </p>
         </div>
         <Button
           className="w-full h-12 font-semibold bg-[#FF5A1F] hover:bg-[#E64A19] rounded-xl"
-          onClick={handleVerify}
-          disabled={loading || otpCode.length < 6}
+          onClick={handleResend}
+          disabled={loading}
         >
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Verifying...
+              Resending...
             </>
           ) : (
-            "Verify"
+            "Resend verification email"
           )}
         </Button>
         <p className="text-center text-sm text-gray-500 mt-4">
-          Didn't receive the code?{" "}
-          <button
-            onClick={handleResend}
+          Already verified?{" "}
+          <Link
+            to="/login"
             className="text-[#FF5A1F] font-medium hover:underline"
           >
-            Resend
-          </button>
+            Login
+          </Link>
         </p>
       </AuthSplitLayout>
     );
