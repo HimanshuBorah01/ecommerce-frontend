@@ -5,10 +5,12 @@ import { useAuth } from "@/lib/AuthContext";
 const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
+  // Manage cart data for authenticated users.
   const { isAuthenticated } = useAuth();
   const [cart, setCart] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Load the cart from the backend when the user is authenticated.
   const fetchCart = async () => {
     if (!isAuthenticated) return;
     setIsLoading(true);
@@ -26,6 +28,7 @@ export const CartProvider = ({ children }) => {
     fetchCart();
   }, [isAuthenticated]);
 
+  // Add an item to the cart.
   const addToCart = async (productId, quantity = 1, variantId) => {
     const data = await api.post("/cart/add", {
       productId,
@@ -36,18 +39,21 @@ export const CartProvider = ({ children }) => {
     return data;
   };
 
+  // Update the quantity of a cart item.
   const updateQuantity = async (itemId, quantity) => {
     const data = await api.put(`/cart/${itemId}`, { quantity });
     setCart(data?.cart || data);
     return data;
   };
 
+  // Remove one item from the cart.
   const removeItem = async (itemId) => {
     const data = await api.delete(`/cart/${itemId}`);
     setCart(data?.cart || data);
     return data;
   };
 
+  // Clear the entire cart.
   const clearCart = async () => {
     const data = await api.delete("/cart/clear");
     setCart(null);

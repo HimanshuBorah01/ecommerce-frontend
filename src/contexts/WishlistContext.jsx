@@ -5,14 +5,20 @@ import { useAuth } from "@/lib/AuthContext";
 const WishlistContext = createContext(null);
 
 export const WishlistProvider = ({ children }) => {
+  // Manage wishlist data for authenticated users.
   const { isAuthenticated } = useAuth();
   const [wishlist, setWishlist] = useState([]);
 
+  // Fetch the current user's wishlist from the backend.
   const fetchWishlist = async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      setWishlist([]);
+      return;
+    }
     try {
       const data = await api.get("/wishlist");
-      setWishlist(data?.items || data?.wishlist?.items || data || []);
+      const items = data?.items || data?.wishlist?.items || data || [];
+      setWishlist(Array.isArray(items) ? items : []);
     } catch {
       setWishlist([]);
     }
@@ -22,12 +28,14 @@ export const WishlistProvider = ({ children }) => {
     fetchWishlist();
   }, [isAuthenticated]);
 
+  // Add a product to the wishlist.
   const addToWishlist = async (productId) => {
     const data = await api.post(`/wishlist/${productId}`);
     await fetchWishlist();
     return data;
   };
 
+  // Remove a product from the wishlist.
   const removeFromWishlist = async (productId) => {
     const data = await api.delete(`/wishlist/${productId}`);
     await fetchWishlist();
@@ -35,6 +43,7 @@ export const WishlistProvider = ({ children }) => {
   };
 
   const isInWishlist = (productId) =>
+    Array.isArray(wishlist) &&
     wishlist.some(
       (item) => (item.product?._id || item.product || item._id) === productId,
     );

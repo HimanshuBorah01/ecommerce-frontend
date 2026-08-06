@@ -1,17 +1,21 @@
-// Lightweight local auth client to replace external SDK references
+// Lightweight local auth client for the app's authentication flow.
+// This file talks to the backend auth endpoints and manages the access token.
 const storageKey = "app_access_token";
 const AUTH_BASE = import.meta.env.VITE_API_BASE_URL || "/api/v1";
 
+// Read the saved access token from browser storage.
 const getToken = () => {
   if (typeof window === "undefined") return null;
   return window.localStorage.getItem(storageKey);
 };
 
+// Save the access token after login or refresh.
 const setToken = (token) => {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(storageKey, token);
 };
 
+// Remove token during logout.
 const clearToken = () => {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(storageKey);
@@ -27,6 +31,7 @@ const wrapResponse = async (res) => {
 };
 
 export const auth = {
+  // Check the current logged-in user using the access token.
   me: async () => {
     // Call /me with access token. If unauthorized, attempt a refresh once.
     let res = await fetch(`${AUTH_BASE}/auth/me`, {
@@ -59,6 +64,8 @@ export const auth = {
 
     return wrapResponse(res);
   },
+
+  // Clear auth state and redirect to login.
   logout: (redirectUrl) => {
     clearToken();
     if (redirectUrl && typeof window !== "undefined") {
@@ -66,11 +73,14 @@ export const auth = {
     }
     return Promise.resolve();
   },
+
   redirectToLogin: (redirectUrl) => {
     if (typeof window !== "undefined") {
       window.location.href = `/login?redirect=${encodeURIComponent(redirectUrl || window.location.href)}`;
     }
   },
+
+  // Login with email and password.
   loginViaEmailPassword: async (email, password) => {
     const res = await fetch(`${AUTH_BASE}/auth/login`, {
       method: "POST",
@@ -79,6 +89,18 @@ export const auth = {
       body: JSON.stringify({ email, password }),
     });
     const payload = await wrapResponse(res);
+    // Save last raw login response for client-side debugging (temporary).
+    try {
+      const headers = {};
+      res.headers.forEach((v, k) => (headers[k] = v));
+      window.__lastAuthLoginResponse = {
+        status: res.status,
+        headers,
+        body: payload,
+      };
+    } catch (e) {
+      /* ignore in non-browser env */
+    }
     if (!res.ok) {
       const err = new Error(payload?.message || "Login failed");
       err.status = res.status;
@@ -89,12 +111,8 @@ export const auth = {
     if (token) setToken(token);
     return payload;
   },
-  loginWithProvider: (provider, returnTo) => {
-    if (typeof window !== "undefined") {
-      const url = `${AUTH_BASE}/auth/oauth/${provider}?returnTo=${encodeURIComponent(returnTo || window.location.href)}`;
-      window.location.href = url;
-    }
-  },
+
+  // Request password reset email.
   resetPasswordRequest: async (email) => {
     const res = await fetch(`${AUTH_BASE}/auth/forgot-password`, {
       method: "POST",
@@ -109,6 +127,8 @@ export const auth = {
     }
     return wrapResponse(res);
   },
+
+  // Complete password reset with the reset token.
   resetPassword: async (resetToken, newPassword) => {
     const res = await fetch(`${AUTH_BASE}/auth/reset-password`, {
       method: "POST",
@@ -123,6 +143,8 @@ export const auth = {
     }
     return wrapResponse(res);
   },
+
+  // Register a new user account.
   register: async (payload) => {
     const res = await fetch(`${AUTH_BASE}/auth/register`, {
       method: "POST",
@@ -137,6 +159,8 @@ export const auth = {
     }
     return body;
   },
+
+  // Verify email using the token from the verification link.
   verifyEmail: async (payload) => {
     const res = await fetch(`${AUTH_BASE}/auth/verify-email`, {
       method: "POST",
@@ -155,7 +179,7 @@ export const auth = {
   },
   setToken,
 
-  // Attempt to refresh access token using refresh cookie on the server.
+  // Refresh the access token using the refresh cookie stored by the browser.
   refresh: async () => {
     const res = await fetch(`${AUTH_BASE}/auth/refresh-token`, {
       method: "POST",
@@ -171,6 +195,8 @@ export const auth = {
     if (token) setToken(token);
     return body;
   },
+
+  // Resend the email verification link.
   resendVerificationEmail: async (email) => {
     const res = await fetch(`${AUTH_BASE}/auth/resend-verification-email`, {
       method: "POST",

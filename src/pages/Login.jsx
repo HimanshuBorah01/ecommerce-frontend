@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import auth from "@/api/authClient";
+import { useAuth } from "@/lib/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
-import GoogleIcon from "@/components/GoogleIcon";
 import AuthSplitLayout from "@/components/auth/AuthSplitLayout";
 import { safeReturnTo } from "@/lib/authReturnTo";
 
@@ -17,6 +17,13 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const returnTo = safeReturnTo();
+  const debugMode =
+    new URLSearchParams(window.location.search).get("debug") === "1";
+  const [debugInfo, setDebugInfo] = useState(null);
+  const mountCount = React.useRef(0);
+  mountCount.current += 1;
+
+  const { checkUserAuth } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,7 +31,20 @@ export default function Login() {
     setLoading(true);
     try {
       await auth.loginViaEmailPassword(email, password);
-      navigate(returnTo, { replace: true });
+      await checkUserAuth();
+      // Prevent redirect loops: if `returnTo` points back to the login page
+      // (or equals the current location), default to home.
+      try {
+        const current = window.location.pathname + window.location.search;
+        const target =
+          returnTo === current || returnTo.startsWith("/login")
+            ? "/"
+            : returnTo;
+        navigate(target, { replace: true });
+        if (debugMode) setDebugInfo({ target, current, returnTo });
+      } catch (navErr) {
+        navigate("/", { replace: true });
+      }
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
@@ -32,9 +52,27 @@ export default function Login() {
     }
   };
 
-  const handleGoogle = () => {
-    auth.loginWithProvider("google", returnTo);
-  };
+  // Gather debug snapshot for the UI when debug mode is enabled.
+  const debugSnapshot = (() => {
+    if (!debugMode) return null;
+    const token =
+      typeof window !== "undefined"
+        ? window.localStorage.getItem("app_access_token")
+        : null;
+    const lastLogin =
+      typeof window !== "undefined" ? window.__lastAuthLoginResponse : null;
+    const sessionKeys =
+      typeof window !== "undefined" ? { ...window.sessionStorage } : null;
+    return {
+      mountCount: mountCount.current,
+      current: window.location.pathname + window.location.search,
+      returnTo,
+      token,
+      lastLogin,
+      sessionKeys,
+      debugInfo,
+    };
+  })();
 
   return (
     <AuthSplitLayout
@@ -141,24 +179,6 @@ export default function Login() {
           )}
         </Button>
       </form>
-
-      <div className="relative my-5">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-200" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-white px-3 text-gray-400">or</span>
-        </div>
-      </div>
-
-      <Button
-        variant="outline"
-        className="w-full h-12 text-sm font-medium border-gray-200 rounded-xl hover:border-gray-300"
-        onClick={handleGoogle}
-      >
-        <GoogleIcon className="w-5 h-5 mr-2" />
-        Continue with Google
-      </Button>
     </AuthSplitLayout>
   );
 }

@@ -53,9 +53,23 @@ const AuthenticatedApp = () => {
     if (authError.type === "user_not_registered") {
       return <UserNotRegisteredError />;
     } else if (authError.type === "auth_required") {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
+      // If we're already on an auth-related page, don't re-redirect.
+      // This prevents nested redirect loops where the app keeps encoding
+      // the current URL into the `redirect` parameter repeatedly.
+      const path =
+        typeof window !== "undefined" ? window.location.pathname : "";
+      const isAuthRoute = [
+        "/login",
+        "/register",
+        "/forgot-password",
+        "/reset-password",
+        "/verify-email",
+      ].some((p) => path.startsWith(p));
+      if (!isAuthRoute) {
+        // Redirect to login automatically when not already on an auth page
+        navigateToLogin();
+        return null;
+      }
     }
   }
 

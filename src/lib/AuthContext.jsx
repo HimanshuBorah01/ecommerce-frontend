@@ -6,6 +6,8 @@ import { createAxiosClient } from "@/lib/axiosClient";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  // Global auth state for the app.
+  // This provider checks whether the user is logged in on app startup.
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
@@ -18,6 +20,7 @@ export const AuthProvider = ({ children }) => {
     checkAppState();
   }, []);
 
+  // Run the initial auth check when the app loads.
   const checkAppState = async () => {
     try {
       setIsLoadingPublicSettings(true);
@@ -85,13 +88,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Verify the current user using /auth/me.
   const checkUserAuth = async () => {
     try {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
       const currentUser = await auth.me();
-      setUser(currentUser);
-      setIsAuthenticated(true);
+      // Normalize response shapes: backend may return the user directly,
+      // or wrap it under `user` or `data` keys. Pick the actual user object.
+      const realUser =
+        currentUser?.user || currentUser?.data || currentUser || null;
+      setUser(realUser);
+      setIsAuthenticated(!!realUser);
       setIsLoadingAuth(false);
       setAuthChecked(true);
     } catch (error) {
@@ -110,6 +118,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Logout and clear auth state for the current user.
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
@@ -123,6 +132,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Redirect the user to login if auth is required.
   const navigateToLogin = () => {
     // Use the redirect helper
     auth.redirectToLogin(window.location.href);

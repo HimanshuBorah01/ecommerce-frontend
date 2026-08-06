@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Loader2, Eye, EyeOff, User, Phone } from "lucide-react";
 import AuthSplitLayout from "@/components/auth/AuthSplitLayout";
-import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo } from "@/lib/authReturnTo";
 
@@ -62,10 +61,6 @@ export default function Register() {
     } catch (err) {
       setError(err.message || "Failed to resend verification email");
     }
-  };
-
-  const handleGoogle = () => {
-    auth.loginWithProvider("google", safeReturnTo());
   };
 
   if (showVerificationSent) {
@@ -280,24 +275,6 @@ export default function Register() {
           )}
         </Button>
       </form>
-
-      <div className="relative my-5">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-200" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-white px-3 text-gray-400">or</span>
-        </div>
-      </div>
-
-      <Button
-        variant="outline"
-        className="w-full h-12 text-sm font-medium border-gray-200 rounded-xl hover:border-gray-300"
-        onClick={handleGoogle}
-      >
-        <GoogleIcon className="w-5 h-5 mr-2" />
-        Continue with Google
-      </Button>
     </AuthSplitLayout>
   );
 }
