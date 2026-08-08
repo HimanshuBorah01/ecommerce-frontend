@@ -199,19 +199,19 @@ export default function Cart() {
             {/* Coupon */}
             <div className="mb-4 pb-4 border-b border-gray-100">
               <div className="flex gap-2">
-                <div className="flex-1 flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg">
-                  <Tag size={14} className="text-gray-400" />
+                <div className="flex-1 min-w-0 flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg">
+                  <Tag size={14} className="text-gray-400 flex-shrink-0" />
                   <input
                     type="text"
                     value={coupon}
                     onChange={(e) => setCoupon(e.target.value)}
                     placeholder="Coupon code"
-                    className="flex-1 text-sm focus:outline-none bg-transparent"
+                    className="flex-1 min-w-0 text-sm focus:outline-none bg-transparent"
                   />
                 </div>
                 <button
                   onClick={applyCoupon}
-                  className="px-4 py-2 bg-[#111827] text-white text-sm font-medium rounded-lg hover:bg-gray-800"
+                  className="px-4 py-2 bg-[#111827] text-white text-sm font-medium rounded-lg hover:bg-gray-800 flex-shrink-0"
                 >
                   Apply
                 </button>
