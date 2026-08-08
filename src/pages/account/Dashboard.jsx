@@ -129,23 +129,41 @@ export default function Dashboard() {
               const status = order.status || "pending";
               const statusInfo =
                 ORDER_STATUSES[status] || ORDER_STATUSES.pending;
+              const items = order.items || [];
+              const firstItem = items[0];
+              const product = firstItem?.product || firstItem?.productId || {};
+              const title =
+                product.name ||
+                product.title ||
+                (items.length > 1
+                  ? `${items.length} items`
+                  : order._id || order.id);
+              const image = product.images?.[0]?.url || product.image || "";
+              const firstPrice = firstItem?.price || product.price || 0;
+              const itemTotal = (firstPrice || 0) * (firstItem?.quantity || 1);
               return (
                 <Link
                   key={order._id || order.id}
                   to={`/account/orders/${order._id || order.id}`}
                   className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center">
-                      {status === "delivered" ? (
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-12 h-12 bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center flex-shrink-0">
+                      {image ? (
+                        <img
+                          src={image}
+                          alt=""
+                          className="w-full h-full object-contain p-1"
+                        />
+                      ) : status === "delivered" ? (
                         <CheckCircle size={18} className="text-green-500" />
                       ) : (
                         <Truck size={18} className="text-[#FF5A1F]" />
                       )}
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-[#111827]">
-                        {order._id || order.id}
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-[#111827] truncate">
+                        {title}
                       </p>
                       <p className="text-xs text-gray-400">
                         {new Date(
@@ -157,9 +175,9 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex-shrink-0">
                     <p className="text-sm font-bold text-[#111827]">
-                      ₹{(order.total || 0).toLocaleString()}
+                      ₹{itemTotal.toLocaleString()}
                     </p>
                     <span
                       className={`text-xs font-medium capitalize ${statusInfo.color.split(" ")[0]}`}
