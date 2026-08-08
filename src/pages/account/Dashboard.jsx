@@ -22,7 +22,16 @@ export default function Dashboard() {
     queryKey: ["orders"],
     queryFn: () => api.get("/orders"),
   });
+  const { data: addressesData } = useQuery({
+    queryKey: ["addresses"],
+    queryFn: () => api.get("/addresses"),
+  });
   const orders = data?.orders || data || [];
+  const addresses = Array.isArray(addressesData?.addresses)
+    ? addressesData.addresses
+    : Array.isArray(addressesData)
+      ? addressesData
+      : [];
 
   const stats = [
     {
@@ -41,7 +50,7 @@ export default function Dashboard() {
     },
     {
       label: "Saved Addresses",
-      value: 0,
+      value: addresses.length,
       icon: MapPin,
       to: "/account/addresses",
       color: "bg-green-50 text-green-600",

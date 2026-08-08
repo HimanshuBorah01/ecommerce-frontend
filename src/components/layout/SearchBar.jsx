@@ -83,19 +83,23 @@ export default function SearchBar() {
           <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider border-b">
             Search Suggestions
           </div>
-          {suggestionList.map((s, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                setQuery(s);
-                handleSearch(s);
-              }}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-orange-50 transition-colors"
-            >
-              <Search size={14} className="text-gray-400 flex-shrink-0" />
-              <span className="text-[#111827]">{s}</span>
-            </button>
-          ))}
+          {suggestionList.map((s, i) => {
+            // Backend returns suggestions as { _id, name, type }.
+            const label = typeof s === "string" ? s : s.name || "";
+            return (
+              <button
+                key={i}
+                onClick={() => {
+                  setQuery(label);
+                  handleSearch(label);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-orange-50 transition-colors"
+              >
+                <Search size={14} className="text-gray-400 flex-shrink-0" />
+                <span className="text-[#111827]">{label}</span>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

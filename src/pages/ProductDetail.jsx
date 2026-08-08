@@ -7,7 +7,6 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuth } from "@/lib/AuthContext";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import ProductCard from "@/components/ui/ProductCard";
-import SkeletonCard from "@/components/ui/SkeletonCard";
 import {
   Heart,
   ShoppingCart,
@@ -89,8 +88,18 @@ export default function ProductDetail() {
     originalPrice && price
       ? Math.round(((originalPrice - price) / originalPrice) * 100)
       : product.discount || 0;
-  const rating = product.rating?.average || product.rating || 0;
-  const reviewCount = product.rating?.count || product.reviewCount || 0;
+  // Backend returns averageRating/numberOfReviews; some mocks use rating.average/reviewCount.
+  const rating =
+    product.rating?.average ||
+    product.averageRating ||
+    product.rating ||
+    product.avgRating ||
+    0;
+  const reviewCount =
+    product.rating?.count ||
+    product.reviewCount ||
+    product.numberOfReviews ||
+    0;
   const inStock = product.stock > 0 || product.inStock !== false;
   const wishlisted = isInWishlist(id);
 
@@ -413,26 +422,81 @@ export default function ProductDetail() {
             </div>
           )}
           {activeTab === "reviews" && (
-            <div className="text-center py-8">
-              <div className="text-4xl font-bold text-[#111827] mb-1">
-                {rating.toFixed(1)}
+            <div>
+              <div className="text-center py-4">
+                <div className="text-4xl font-bold text-[#111827] mb-1">
+                  {rating.toFixed(1)}
+                </div>
+                <div className="flex justify-center mb-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      size={18}
+                      className={
+                        i < Math.floor(rating)
+                          ? "text-[#FACC15] fill-[#FACC15]"
+                          : "text-gray-200 fill-gray-200"
+                      }
+                    />
+                  ))}
+                </div>
+                <p className="text-sm text-gray-500">
+                  {reviewCount.toLocaleString()} ratings
+                </p>
               </div>
-              <div className="flex justify-center mb-2">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={18}
-                    className={
-                      i < Math.floor(rating)
-                        ? "text-[#FACC15] fill-[#FACC15]"
-                        : "text-gray-200 fill-gray-200"
-                    }
-                  />
-                ))}
-              </div>
-              <p className="text-sm text-gray-500">
-                {reviewCount.toLocaleString()} ratings
-              </p>
+
+              {/* Review list */}
+              {Array.isArray(product.reviews) && product.reviews.length > 0 ? (
+                <div className="space-y-4 mt-4 pt-4 border-t border-gray-100">
+                  {product.reviews.map((review, i) => (
+                    <div
+                      key={review._id || i}
+                      className="pb-4 border-b border-gray-100 last:border-0 last:pb-0"
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="flex">
+                          {[...Array(5)].map((_, s) => (
+                            <Star
+                              key={s}
+                              size={13}
+                              className={
+                                s < (review.rating || 0)
+                                  ? "text-[#FACC15] fill-[#FACC15]"
+                                  : "text-gray-200 fill-gray-200"
+                              }
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs text-gray-400">
+                          {review.user?.name || "Verified Buyer"}
+                        </span>
+                        {review.createdAt && (
+                          <span className="text-xs text-gray-400">
+                            ·{" "}
+                            {new Date(review.createdAt).toLocaleDateString(
+                              "en-IN",
+                              {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )}
+                          </span>
+                        )}
+                      </div>
+                      {review.comment && (
+                        <p className="text-sm text-gray-600">
+                          {review.comment}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-sm text-gray-500 py-4">
+                  No reviews yet. Be the first to review this product!
+                </p>
+              )}
             </div>
           )}
         </div>

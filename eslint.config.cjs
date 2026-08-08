@@ -1,1 +1,62 @@
-module.exports = require("./eslint.config.json");
+const reactPlugin = require("eslint-plugin-react");
+const reactHooks = require("eslint-plugin-react-hooks");
+const unusedImports = require("eslint-plugin-unused-imports");
+
+/** @type {import('eslint').Linter.Config[]} */
+module.exports = [
+  {
+    files: [
+      "src/components/**/*.{js,mjs,cjs,jsx}",
+      "src/pages/**/*.{js,mjs,cjs,jsx}",
+      "src/Layout.jsx",
+    ],
+    ignores: ["src/lib/**/*", "src/components/ui/**/*"],
+    languageOptions: {
+      globals: {
+        window: "readonly",
+        document: "readonly",
+        navigator: "readonly",
+        location: "readonly",
+        history: "readonly",
+        console: "readonly",
+        fetch: "readonly",
+        FormData: "readonly",
+      },
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: "module",
+        ecmaFeatures: { jsx: true },
+      },
+    },
+    settings: {
+      react: { version: "detect" },
+    },
+    plugins: {
+      react: reactPlugin,
+      "react-hooks": reactHooks,
+      "unused-imports": unusedImports,
+    },
+    rules: {
+      "no-unused-vars": "off",
+      "react/jsx-uses-vars": "error",
+      "react/jsx-uses-react": "error",
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "warn",
+        {
+          vars: "all",
+          varsIgnorePattern: "^_",
+          args: "after-used",
+          argsIgnorePattern: "^_",
+        },
+      ],
+      "react/prop-types": "off",
+      "react/react-in-jsx-scope": "off",
+      "react/no-unknown-property": [
+        "error",
+        { ignore: ["cmdk-input-wrapper", "toast-close"] },
+      ],
+      "react-hooks/rules-of-hooks": "error",
+    },
+  },
+];

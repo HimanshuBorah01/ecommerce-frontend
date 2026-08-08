@@ -1,5 +1,5 @@
 import { Link, useLocation, Navigate, Outlet } from 'react-router-dom';
-import { LayoutDashboard, Package, MapPin, Heart, Star, User, Lock, Mail, Phone, Bell, HelpCircle, LogOut, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Package, MapPin, Heart, User, Lock, Mail, Bell, HelpCircle, LogOut, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 

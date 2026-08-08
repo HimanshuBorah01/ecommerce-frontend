@@ -1,17 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { api } from "@/lib/api";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import EmptyState from "@/components/ui/EmptyState";
 import { Star } from "lucide-react";
 
 export default function Reviews() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["reviews"],
-    queryFn: () => api.get("/reviews"),
-  });
-
-  const reviews = data?.reviews || data || [];
+  // Reviews endpoint not available in backend
+  // Reviews are managed per product via /api/v1/products/:id/reviews
+  const reviews = [];
+  const isLoading = false;
 
   if (isLoading) {
     return (
@@ -42,9 +38,9 @@ export default function Reviews() {
       {reviews.length === 0 ? (
         <EmptyState
           icon={<Star size={48} className="text-gray-300" />}
-          title="No reviews yet"
-          description="Share your experience with products you've purchased to help other shoppers."
-          actionLabel="Start Shopping"
+          title="Reviews coming soon"
+          description="Product reviews will be available here. You can add reviews to products from the product page."
+          actionLabel="Browse Products"
           onAction={() => (window.location.href = "/search")}
         />
       ) : (

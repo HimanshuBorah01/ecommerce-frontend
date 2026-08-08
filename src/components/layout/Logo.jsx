@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { ShoppingBag } from 'lucide-react';
 
 export default function Logo({ size = 'md' }) {
   const sizes = {

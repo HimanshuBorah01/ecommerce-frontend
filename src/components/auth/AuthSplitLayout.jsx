@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import { ShieldCheck, Zap, Package } from 'lucide-react';
 
 const features = [

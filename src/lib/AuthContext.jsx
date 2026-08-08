@@ -1,142 +1,111 @@
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+} from "react";
 import auth from "@/api/authClient";
-import { appParams } from "@/lib/app-params";
-import { createAxiosClient } from "@/lib/axiosClient";
+import { getToken, setToken, removeToken } from "@/lib/api";
 
 const AuthContext = createContext();
 
+/**
+ * Normalize the user object returned by the backend `/auth/me` endpoint.
+ * Backend returns `{ user: { id, name, email, phone, role, isEmailVerified } }`.
+ */
+const normalizeUser = (data) => {
+  const u = data?.user || data?.data || data || null;
+  if (!u) return null;
+  return {
+    id: u._id || u.id,
+    name: u.name,
+    email: u.email,
+    phone: u.phone,
+    role: u.role,
+    isEmailVerified: u.isEmailVerified,
+  };
+};
+
 export const AuthProvider = ({ children }) => {
-  // Global auth state for the app.
-  // This provider checks whether the user is logged in on app startup.
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
-  const [authError, setAuthError] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
+  const [authError, setAuthError] = useState(null);
 
-  useEffect(() => {
-    checkAppState();
-  }, []);
-
-  // Run the initial auth check when the app loads.
-  const checkAppState = async () => {
-    try {
-      setIsLoadingPublicSettings(true);
-      setAuthError(null);
-
-      // First, check app public settings (with token if available)
-      // This will tell us if auth is required, user not registered, etc.
-      const appClient = createAxiosClient({
-        baseURL: `/api/apps/public`,
-        headers: {
-          "X-App-Id": appParams.appId,
-        },
-        token: appParams.token, // Include token if available
-        interceptResponses: true,
-      });
-
-      try {
-        const publicSettings = await appClient.get(
-          `/prod/public-settings/by-id/${appParams.appId}`,
-        );
-        setAppPublicSettings(publicSettings);
-
-        // If we got the app public settings successfully, check if user is authenticated
-        if (appParams.token) {
-          await checkUserAuth();
-        } else {
-          setIsLoadingAuth(false);
-          setIsAuthenticated(false);
-          setAuthChecked(true);
-        }
-        setIsLoadingPublicSettings(false);
-      } catch (appError) {
-        console.warn(
-          "App state check failed (optional):",
-          appError?.message || appError,
-        );
-        // If the apps public endpoint is not present (404) or network error,
-        // treat app public settings as optional and continue to check user auth.
-        try {
-          if (appParams.token) {
-            await checkUserAuth();
-          } else {
-            setIsLoadingAuth(false);
-            setIsAuthenticated(false);
-            setAuthChecked(true);
-          }
-        } catch (e) {
-          // If user auth check fails, fall through to set the error state below.
-          console.error("User auth check after app failure failed:", e);
-          setAuthError({
-            type: "unknown",
-            message: e.message || "Failed to authenticate",
-          });
-        }
-        setIsLoadingPublicSettings(false);
-      }
-    } catch (error) {
-      console.error("Unexpected error:", error);
-      setAuthError({
-        type: "unknown",
-        message: error.message || "An unexpected error occurred",
-      });
-      setIsLoadingPublicSettings(false);
+  // Fetch the current user from the backend using the access token.
+  const checkUserAuth = useCallback(async () => {
+    const token = getToken();
+    if (!token) {
+      setUser(null);
+      setIsAuthenticated(false);
       setIsLoadingAuth(false);
+      setAuthChecked(true);
+      return;
     }
-  };
-
-  // Verify the current user using /auth/me.
-  const checkUserAuth = async () => {
     try {
-      // Now check if the user is authenticated
       setIsLoadingAuth(true);
-      const currentUser = await auth.me();
-      // Normalize response shapes: backend may return the user directly,
-      // or wrap it under `user` or `data` keys. Pick the actual user object.
-      const realUser =
-        currentUser?.user || currentUser?.data || currentUser || null;
+      const data = await auth.me();
+      const realUser = normalizeUser(data);
       setUser(realUser);
       setIsAuthenticated(!!realUser);
-      setIsLoadingAuth(false);
-      setAuthChecked(true);
+      setAuthError(null);
     } catch (error) {
-      console.error("User auth check failed:", error);
-      setIsLoadingAuth(false);
+      removeToken();
+      setUser(null);
       setIsAuthenticated(false);
-      setAuthChecked(true);
-
-      // If user auth fails, it might be an expired token
-      if (error.status === 401 || error.status === 403) {
+      if (error?.status === 401 || error?.status === 403) {
         setAuthError({
           type: "auth_required",
           message: "Authentication required",
         });
       }
+    } finally {
+      setIsLoadingAuth(false);
+      setAuthChecked(true);
     }
+  }, []);
+
+  useEffect(() => {
+    checkUserAuth();
+  }, [checkUserAuth]);
+
+  // Login with email/password and load the user.
+  const login = async (email, password) => {
+    const data = await auth.loginViaEmailPassword(email, password);
+    const token = data?.accessToken || data?.access_token || data?.token;
+    if (token) setToken(token);
+    await checkUserAuth();
+    return data;
   };
 
-  // Logout and clear auth state for the current user.
-  const logout = (shouldRedirect = true) => {
+  // Register a new user.
+  const register = async (payload) => {
+    return auth.register(payload);
+  };
+
+  // Logout: revoke the backend session, then clear local auth state.
+  const logout = useCallback(async () => {
+    try {
+      await auth.logout();
+    } catch {
+      // Ignore network/backend errors — always clear local state.
+    }
+    removeToken();
     setUser(null);
     setIsAuthenticated(false);
+    setAuthChecked(true);
+  }, []);
 
-    if (shouldRedirect) {
-      // Use the SDK's logout method which handles token cleanup and redirect
-      auth.logout(window.location.href);
-    } else {
-      // Just remove the token without redirect
-      auth.logout();
-    }
-  };
-
-  // Redirect the user to login if auth is required.
+  // Redirect to the login page with a safe returnTo.
   const navigateToLogin = () => {
-    // Use the redirect helper
     auth.redirectToLogin(window.location.href);
   };
+
+  const updateUser = (updated) => setUser((prev) => ({ ...prev, ...updated }));
+
+  const refetchUser = useCallback(() => checkUserAuth(), [checkUserAuth]);
 
   return (
     <AuthContext.Provider
@@ -144,14 +113,16 @@ export const AuthProvider = ({ children }) => {
         user,
         isAuthenticated,
         isLoadingAuth,
-        isLoadingPublicSettings,
+        isLoading: isLoadingAuth,
         authError,
-        appPublicSettings,
         authChecked,
+        login,
+        register,
         logout,
-        navigateToLogin,
+        updateUser,
+        refetchUser,
         checkUserAuth,
-        checkAppState,
+        navigateToLogin,
       }}
     >
       {children}

@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import NewsletterPopup from "@/components/NewsletterPopup";
 import { LayoutGrid, Award, Tag, RefreshCw } from "lucide-react";
@@ -33,13 +31,8 @@ const highlights = [
 export default function Categories() {
   const [showPopup, setShowPopup] = useState(false);
   const [subEmail, setSubEmail] = useState("");
-  const { data, isLoading } = useQuery({
-    queryKey: ["categories"],
-    queryFn: () => api.get("/categories"),
-    staleTime: 1000 * 60 * 10,
-  });
 
-  const categories = data?.categories || [
+  const categories = [
     {
       name: "Electronics",
       slug: "electronics",

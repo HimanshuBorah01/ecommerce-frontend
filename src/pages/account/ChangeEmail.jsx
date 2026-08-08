@@ -11,14 +11,18 @@ export default function ChangeEmail() {
   const [step, setStep] = useState(1);
   const [sent, setSent] = useState(false);
 
-  const handleSendOTP = (e) => {
+  const handleSendOTP = async (e) => {
     e.preventDefault();
     setSent(true);
+    // Email change endpoint not available in backend
+    // This is a placeholder for future implementation
     setStep(2);
   };
 
-  const handleVerify = (e) => {
+  const handleVerify = async (e) => {
     e.preventDefault();
+    // Email verification endpoint not available in backend
+    // This is a placeholder for future implementation
     setStep(3);
   };
 

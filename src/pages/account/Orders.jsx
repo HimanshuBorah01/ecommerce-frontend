@@ -4,7 +4,16 @@ import { api } from "@/lib/api";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import EmptyState from "@/components/ui/EmptyState";
 import { ORDER_STATUSES } from "@/constants";
-import { Package, ChevronRight, Clock, Truck, CheckCircle } from "lucide-react";
+import {
+  Package,
+  ChevronRight,
+  Clock,
+  Truck,
+  CheckCircle,
+  ClipboardList,
+  Box,
+  Send,
+} from "lucide-react";
 import { useState } from "react";
 
 export default function Orders() {
@@ -21,7 +30,40 @@ export default function Orders() {
   const filtered =
     filter === "all" ? orders : orders.filter((o) => o.status === filter);
 
-  const statusSteps = ["pending", "processing", "shipped", "delivered"];
+  // Full lifecycle used by the backend order model.
+  const statusSteps = [
+    "pending",
+    "confirmed",
+    "processing",
+    "packed",
+    "shipped",
+    "out_for_delivery",
+    "delivered",
+  ];
+
+  const stepIcons = [
+    ClipboardList,
+    CheckCircle,
+    Clock,
+    Box,
+    Send,
+    Truck,
+    CheckCircle,
+  ];
+
+  const filterTabs = [
+    "all",
+    "pending",
+    "confirmed",
+    "processing",
+    "packed",
+    "shipped",
+    "out_for_delivery",
+    "delivered",
+    "cancelled",
+    "returned",
+    "refunded",
+  ];
 
   return (
     <div>
@@ -41,20 +83,13 @@ export default function Orders() {
 
       {/* Filter tabs */}
       <div className="flex gap-2 mb-4 md:mb-6 overflow-x-auto scrollbar-hide">
-        {[
-          "all",
-          "pending",
-          "processing",
-          "shipped",
-          "delivered",
-          "cancelled",
-        ].map((f) => (
+        {filterTabs.map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-lg text-sm font-medium capitalize whitespace-nowrap transition-colors ${filter === f ? "bg-[#FF5A1F] text-white" : "bg-white border border-gray-200 text-gray-600 hover:border-[#FF5A1F]"}`}
           >
-            {f}
+            {f.replace(/_/g, " ")}
           </button>
         ))}
       </div>
@@ -109,6 +144,7 @@ export default function Orders() {
                       <p className="text-sm font-bold text-[#111827]">
                         ₹
                         {(
+                          order.totalAmount ||
                           order.total ||
                           order.totalPrice ||
                           0
@@ -152,31 +188,33 @@ export default function Orders() {
                   </div>
 
                   {/* Progress */}
-                  {status !== "cancelled" && status !== "returned" && (
-                    <div className="flex items-center mt-4 mb-2">
-                      {statusSteps.map((s, i) => {
-                        const Icon = [Clock, Clock, Truck, CheckCircle][i];
-                        const done = i <= currentStep;
-                        return (
-                          <div
-                            key={s}
-                            className="flex items-center flex-1 last:flex-none"
-                          >
+                  {status !== "cancelled" &&
+                    status !== "returned" &&
+                    status !== "refunded" && (
+                      <div className="flex items-center mt-4 mb-2">
+                        {statusSteps.map((s, i) => {
+                          const Icon = stepIcons[i];
+                          const done = i <= currentStep;
+                          return (
                             <div
-                              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${done ? "bg-green-500 text-white" : "bg-gray-200 text-gray-400"}`}
+                              key={s}
+                              className="flex items-center flex-1 last:flex-none"
                             >
-                              <Icon size={14} />
-                            </div>
-                            {i < statusSteps.length - 1 && (
                               <div
-                                className={`flex-1 h-0.5 mx-1 ${i < currentStep ? "bg-green-500" : "bg-gray-200"}`}
-                              />
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${done ? "bg-green-500 text-white" : "bg-gray-200 text-gray-400"}`}
+                              >
+                                <Icon size={14} />
+                              </div>
+                              {i < statusSteps.length - 1 && (
+                                <div
+                                  className={`flex-1 h-0.5 mx-1 ${i < currentStep ? "bg-green-500" : "bg-gray-200"}`}
+                                />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
 
                   <div className="flex items-center justify-between mt-4">
                     <p className="text-sm text-gray-500">

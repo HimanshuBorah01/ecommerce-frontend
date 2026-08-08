@@ -4,6 +4,18 @@ import { useAuth } from "@/lib/AuthContext";
 
 const CartContext = createContext(null);
 
+// Compute the total price of a cart envelope (handles backend shape `{ items }`).
+const computeCartTotal = (cart) => {
+  const items = cart?.items || [];
+  if (cart?.totalPrice != null) return cart.totalPrice;
+  if (cart?.total != null) return cart.total;
+  return items.reduce((sum, i) => {
+    const product = i.product || {};
+    const price = i.price || product.price || 0;
+    return sum + price * (i.quantity || 1);
+  }, 0);
+};
+
 export const CartProvider = ({ children }) => {
   // Manage cart data for authenticated users.
   const { isAuthenticated } = useAuth();
@@ -12,7 +24,10 @@ export const CartProvider = ({ children }) => {
 
   // Load the cart from the backend when the user is authenticated.
   const fetchCart = async () => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      setCart(null);
+      return;
+    }
     setIsLoading(true);
     try {
       const data = await api.get("/cart");
@@ -53,16 +68,28 @@ export const CartProvider = ({ children }) => {
     return data;
   };
 
-  // Clear the entire cart.
+  // Clear the entire cart. The backend has no single "clear" endpoint,
+  // so remove each item individually (silently ignoring failures).
   const clearCart = async () => {
-    const data = await api.delete("/cart/clear");
+    const items = cart?.items || [];
+    await Promise.all(
+      items.map(async (item) => {
+        const itemId = item._id || item.product?._id || item.product;
+        if (!itemId) return;
+        try {
+          await api.delete(`/cart/${itemId}`);
+        } catch {
+          /* ignore individual failures */
+        }
+      }),
+    );
     setCart(null);
-    return data;
+    return { success: true };
   };
 
   const cartCount =
     cart?.items?.reduce((sum, i) => sum + (i.quantity || 1), 0) || 0;
-  const cartTotal = cart?.totalPrice || cart?.total || 0;
+  const cartTotal = computeCartTotal(cart);
 
   return (
     <CartContext.Provider

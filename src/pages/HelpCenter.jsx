@@ -5,7 +5,6 @@ import {
   Search,
   Package,
   CreditCard,
-  Truck,
   RefreshCw,
   User,
   ChevronDown,

@@ -24,8 +24,18 @@ export default function ProductCard({ product }) {
     originalPrice && price
       ? Math.round(((originalPrice - price) / originalPrice) * 100)
       : product.discount || 0;
-  const rating = product.rating?.average || product.rating || 0;
-  const reviewCount = product.rating?.count || product.reviewCount || 0;
+  // Backend returns averageRating/numberOfReviews; some mocks use rating.average/reviewCount.
+  const rating =
+    product.rating?.average ||
+    product.averageRating ||
+    product.rating ||
+    product.avgRating ||
+    0;
+  const reviewCount =
+    product.rating?.count ||
+    product.reviewCount ||
+    product.numberOfReviews ||
+    0;
   const inStock = product.stock > 0 || product.inStock !== false;
   const image =
     product.images?.[0]?.url || product.image || product.thumbnail || "";

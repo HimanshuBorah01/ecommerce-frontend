@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { api } from "@/lib/api";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import {
   User,
@@ -25,15 +24,21 @@ export default function Profile() {
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [msg, setMsg] = useState("");
 
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
     setSaved(false);
     try {
-      await api.put("/users/profile", form);
+      // Profile update endpoint not available in backend
+      // This is a placeholder for future implementation
+      setMsg("Profile update coming soon!");
       setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      setTimeout(() => {
+        setSaved(false);
+        setMsg("");
+      }, 3000);
     } catch {
       /* bubble */
     } finally {
@@ -128,6 +133,9 @@ export default function Profile() {
             </div>
             <div className="md:col-span-2"></div>
           </div>
+          {msg && (
+            <p className="text-sm text-blue-600 font-medium mt-2">{msg}</p>
+          )}
           <div className="flex items-center gap-3 mt-6">
             <button
               type="submit"

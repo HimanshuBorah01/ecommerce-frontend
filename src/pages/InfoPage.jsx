@@ -13,7 +13,6 @@ import {
   User,
   Headphones,
   Truck,
-  RefreshCw,
   Tag,
   Target,
   Eye,

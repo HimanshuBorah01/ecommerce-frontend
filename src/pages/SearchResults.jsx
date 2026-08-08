@@ -13,7 +13,6 @@ import ProductCard from "@/components/ui/ProductCard";
 import SkeletonCard from "@/components/ui/SkeletonCard";
 import { Pagination } from "@/components/ui/pagination";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
-import EmptyState from "@/components/ui/EmptyState";
 import { SORT_OPTIONS } from "@/constants";
 
 function FilterSection({ title, children, defaultOpen = true }) {
@@ -87,18 +86,19 @@ export default function SearchResults() {
       rating,
       inStock,
     ],
-    queryFn: () =>
-      api.get("/products", {
-        q,
-        category,
-        sort,
+    queryFn: () => {
+      // Backend supports: search, category, minPrice, maxPrice, page, limit.
+      // Sort/rating/inStock are filtered client-side or unsupported.
+      const params = {
         page,
         limit: 16,
-        minPrice,
-        maxPrice,
-        rating,
-        inStock,
-      }),
+      };
+      if (q) params.search = q;
+      if (category) params.category = category;
+      if (minPrice) params.minPrice = minPrice;
+      if (maxPrice) params.maxPrice = maxPrice;
+      return api.get("/products", params);
+    },
     keepPreviousData: true,
   });
 
@@ -107,9 +107,54 @@ export default function SearchResults() {
   }, [q, category]);
 
   const products = data?.products || [];
-  const total = data?.total || 0;
+  // Backend returns totalProducts, not total.
+  const total = data?.totalProducts || data?.total || 0;
   const totalPages = data?.totalPages || Math.ceil(total / 16);
   const facets = data?.facets || {};
+
+  const [sortedProducts, setSortedProducts] = useState(null);
+
+  // Sort is not supported by the backend query API, so sort client-side.
+  useEffect(() => {
+    if (sort && products.length > 0) {
+      const sorted = [...products];
+      if (sort === "price_asc")
+        sorted.sort((a, b) => (a.price || 0) - (b.price || 0));
+      else if (sort === "price_desc")
+        sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
+      else if (sort === "rating")
+        sorted.sort(
+          (a, b) =>
+            (b.averageRating || b.rating?.average || 0) -
+            (a.averageRating || a.rating?.average || 0),
+        );
+      else if (sort === "newest")
+        sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      else if (sort === "discount")
+        sorted.sort((a, b) => {
+          const da =
+            a.discount ||
+            (a.originalPrice && a.price
+              ? Math.round(
+                  ((a.originalPrice - a.price) / a.originalPrice) * 100,
+                )
+              : 0);
+          const db =
+            b.discount ||
+            (b.originalPrice && b.price
+              ? Math.round(
+                  ((b.originalPrice - b.price) / b.originalPrice) * 100,
+                )
+              : 0);
+          return db - da;
+        });
+      setSortedProducts(sorted);
+    } else {
+      setSortedProducts(null);
+    }
+  }, [sort, products]);
+
+  const displayProducts = sortedProducts || products;
 
   const updateFilter = (key, val) => {
     const p = new URLSearchParams(searchParams);
@@ -410,7 +455,7 @@ export default function SearchResults() {
                 <SkeletonCard key={i} />
               ))}
             </div>
-          ) : products.length === 0 ? (
+          ) : displayProducts.length === 0 ? (
             <div className="bg-white rounded-xl border border-gray-200 py-12 md:py-16">
               <div className="text-center">
                 <div className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -437,7 +482,7 @@ export default function SearchResults() {
               <div
                 className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 transition-opacity ${isFetching ? "opacity-70" : ""}`}
               >
-                {products.map((p) => (
+                {displayProducts.map((p) => (
                   <ProductCard key={p._id || p.id} product={p} />
                 ))}
               </div>

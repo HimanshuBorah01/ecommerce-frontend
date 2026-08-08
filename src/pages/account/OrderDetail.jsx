@@ -46,7 +46,12 @@ export default function OrderDetail() {
     items.reduce((s, i) => s + (i.price || 0) * (i.quantity || 1), 0);
   const shipping = order.shipping || 0;
   const tax = order.tax || 0;
-  const total = order.total || order.totalPrice || subtotal + shipping + tax;
+  // Backend order model stores the total as `totalAmount`.
+  const total =
+    order.totalAmount ||
+    order.total ||
+    order.totalPrice ||
+    subtotal + shipping + tax;
 
   return (
     <div>
@@ -147,22 +152,29 @@ export default function OrderDetail() {
               <MapPin size={18} className="text-[#FF5A1F]" /> Shipping Address
             </h2>
             {order.address ? (
-              <div className="text-sm text-gray-600 space-y-1">
-                <p className="font-medium text-[#111827]">
-                  {order.address.fullName}
+              typeof order.address === "object" ? (
+                <div className="text-sm text-gray-600 space-y-1">
+                  <p className="font-medium text-[#111827]">
+                    {order.address.fullName}
+                  </p>
+                  <p>
+                    {order.address.addressLine1}
+                    {order.address.addressLine2
+                      ? `, ${order.address.addressLine2}`
+                      : ""}
+                  </p>
+                  <p>
+                    {order.address.city}, {order.address.state} -{" "}
+                    {order.address.pincode || order.address.pinCode}
+                  </p>
+                  <p>Phone: {order.address.phone}</p>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400">
+                  Address reference:{" "}
+                  <span className="font-mono">{order.address}</span>
                 </p>
-                <p>
-                  {order.address.addressLine1}
-                  {order.address.addressLine2
-                    ? `, ${order.address.addressLine2}`
-                    : ""}
-                </p>
-                <p>
-                  {order.address.city}, {order.address.state} -{" "}
-                  {order.address.pincode}
-                </p>
-                <p>Phone: {order.address.phone}</p>
-              </div>
+              )
             ) : (
               <p className="text-sm text-gray-400">No address on file</p>
             )}
@@ -196,11 +208,29 @@ export default function OrderDetail() {
                 </span>
               </div>
             </div>
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <p className="text-sm text-gray-500">Payment Method</p>
-              <p className="text-sm font-medium text-[#111827] capitalize">
-                {order.paymentMethod || "N/A"}
-              </p>
+            <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+              <div>
+                <p className="text-sm text-gray-500">Payment Method</p>
+                <p className="text-sm font-medium text-[#111827] capitalize">
+                  {order.paymentMethod || "N/A"}
+                </p>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-500">Payment Status</p>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
+                    order.paymentStatus === "paid"
+                      ? "bg-green-50 text-green-600"
+                      : order.paymentStatus === "failed"
+                        ? "bg-red-50 text-red-600"
+                        : order.paymentStatus === "refunded"
+                          ? "bg-blue-50 text-blue-600"
+                          : "bg-yellow-50 text-yellow-600"
+                  }`}
+                >
+                  {order.paymentStatus || "pending"}
+                </span>
+              </div>
             </div>
             <button className="btn-outline w-full mt-4">
               <Download size={16} /> Download Invoice

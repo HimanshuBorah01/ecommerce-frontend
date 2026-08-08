@@ -22,14 +22,14 @@ export default function ChangePassword() {
     setSaving(true);
     setMsg("");
     try {
-      await api.put("/users/password", {
+      await api.post("/auth/change-password", {
         currentPassword: form.currentPassword,
         newPassword: form.newPassword,
       });
       setMsg("✓ Password updated successfully");
       setForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-    } catch {
-      setMsg("Failed to update password");
+    } catch (err) {
+      setMsg(err.message || "Failed to update password");
     } finally {
       setSaving(false);
     }

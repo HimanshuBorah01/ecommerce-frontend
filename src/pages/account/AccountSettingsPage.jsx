@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
-import { Settings, Globe, Moon, Bell, Trash2, Download } from "lucide-react";
+import { Settings, Globe, Trash2 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { useNavigate } from "react-router-dom";
 

@@ -4,10 +4,24 @@ import { useAuth } from "@/lib/AuthContext";
 
 const WishlistContext = createContext(null);
 
+// Normalize wishlist data from the backend:
+// - Backend GET /wishlist returns `{ wishlist: { products: [...] } }`
+// - Some responses may be `{ items: [...] }`, `{ wishlist: { items: [...] } }`, or a plain array.
+const normalizeWishlist = (data) => {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.items)) return data.items;
+  if (Array.isArray(data?.wishlist?.products)) return data.wishlist.products;
+  if (Array.isArray(data?.wishlist?.items)) return data.wishlist.items;
+  if (Array.isArray(data?.wishlist)) return data.wishlist;
+  if (Array.isArray(data?.products)) return data.products;
+  return [];
+};
+
 export const WishlistProvider = ({ children }) => {
   // Manage wishlist data for authenticated users.
   const { isAuthenticated } = useAuth();
   const [wishlist, setWishlist] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Fetch the current user's wishlist from the backend.
   const fetchWishlist = async () => {
@@ -15,12 +29,14 @@ export const WishlistProvider = ({ children }) => {
       setWishlist([]);
       return;
     }
+    setIsLoading(true);
     try {
       const data = await api.get("/wishlist");
-      const items = data?.items || data?.wishlist?.items || data || [];
-      setWishlist(Array.isArray(items) ? items : []);
+      setWishlist(normalizeWishlist(data));
     } catch {
       setWishlist([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -59,6 +75,7 @@ export const WishlistProvider = ({ children }) => {
         addToWishlist,
         removeFromWishlist,
         refetchWishlist: fetchWishlist,
+        isLoading,
       }}
     >
       {children}

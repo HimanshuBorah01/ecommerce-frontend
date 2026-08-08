@@ -114,10 +114,11 @@ export default function Login() {
             />
             <Input
               id="email"
-              type="email"
+              type="text"
+              inputMode="email"
               autoComplete="email"
               autoFocus
-              placeholder="you@example.com"
+              placeholder="you@example.com or phone"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="pl-10 h-12 border-gray-200 rounded-xl focus:border-[#FF5A1F] focus:ring-[#FF5A1F]/20"
