@@ -195,26 +195,51 @@ export default function Orders() {
                         {statusSteps.map((s, i) => {
                           const Icon = stepIcons[i];
                           const done = i <= currentStep;
+                          const label = ORDER_STATUSES[s]?.label || s;
                           return (
                             <div
                               key={s}
-                              className="flex items-center flex-1 last:flex-none"
+                              className="flex items-center flex-1 last:flex-none flex-col"
                             >
-                              <div
-                                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs ${done ? "bg-green-500 text-white" : "bg-gray-200 text-gray-400"}`}
-                              >
-                                <Icon size={14} />
-                              </div>
-                              {i < statusSteps.length - 1 && (
+                              <div className="flex items-center w-full">
                                 <div
-                                  className={`flex-1 h-0.5 mx-1 ${i < currentStep ? "bg-green-500" : "bg-gray-200"}`}
-                                />
-                              )}
+                                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0 ${done ? "bg-green-500 text-white" : "bg-gray-200 text-gray-400"}`}
+                                >
+                                  <Icon size={14} />
+                                </div>
+                                {i < statusSteps.length - 1 && (
+                                  <div
+                                    className={`flex-1 h-0.5 mx-1 ${i < currentStep ? "bg-green-500" : "bg-gray-200"}`}
+                                  />
+                                )}
+                              </div>
+                              <span
+                                className={`text-[10px] md:text-xs mt-1.5 text-center capitalize ${
+                                  done
+                                    ? "text-green-600 font-semibold"
+                                    : "text-gray-400"
+                                }`}
+                              >
+                                {label}
+                              </span>
                             </div>
                           );
                         })}
                       </div>
                     )}
+
+                  {/* Cancelled / returned / refunded status banner */}
+                  {(status === "cancelled" ||
+                    status === "returned" ||
+                    status === "refunded") && (
+                    <div className="mt-4 mb-2">
+                      <span
+                        className={`inline-flex px-3 py-1.5 rounded-full text-sm font-semibold capitalize ${statusInfo.color}`}
+                      >
+                        {statusInfo.label}
+                      </span>
+                    </div>
+                  )}
 
                   <div className="flex items-center justify-between mt-4">
                     <p className="text-sm text-gray-500">
