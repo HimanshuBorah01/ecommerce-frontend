@@ -97,20 +97,23 @@ export default function OrderSuccessModal({
             </p>
 
             {/* Order info */}
-            <div className="bg-green-50 border border-green-100 rounded-lg p-4 mb-5 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-left">
-                <ClipboardList size={18} className="text-green-600" />
-                <div>
+            <div className="bg-green-50 border border-green-100 rounded-lg p-4 mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-2 text-left min-w-0">
+                <ClipboardList
+                  size={18}
+                  className="text-green-600 flex-shrink-0"
+                />
+                <div className="min-w-0">
                   <p className="text-xs text-gray-500">Order ID</p>
-                  <p className="text-sm font-mono font-medium text-[#111827]">
+                  <p className="text-sm font-mono font-medium text-[#111827] break-all">
                     #{order?.id || order?._id || "N/A"}
                   </p>
                 </div>
               </div>
-              <div className="w-px h-10 bg-gray-200"></div>
-              <div className="flex items-center gap-2 text-left">
-                <Calendar size={18} className="text-green-600" />
-                <div>
+              <div className="hidden sm:block w-px h-10 bg-gray-200"></div>
+              <div className="flex items-center gap-2 text-left min-w-0">
+                <Calendar size={18} className="text-green-600 flex-shrink-0" />
+                <div className="min-w-0">
                   <p className="text-xs text-gray-500">Order Date</p>
                   <p className="text-sm font-medium text-[#111827]">
                     {orderDate}, {orderTime}
@@ -124,7 +127,7 @@ export default function OrderSuccessModal({
               <h3 className="text-sm font-semibold text-[#111827] mb-4">
                 What's Next?
               </h3>
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between">
                 {steps.map((step, i) => (
                   <div
                     key={i}
@@ -142,11 +145,11 @@ export default function OrderSuccessModal({
                       <step.icon size={16} />
                     </div>
                     <p
-                      className={`text-xs font-medium ${step.active ? "text-[#111827]" : "text-gray-400"}`}
+                      className={`text-[10px] sm:text-xs font-medium leading-tight text-center px-0.5 ${step.active ? "text-[#111827]" : "text-gray-400"}`}
                     >
                       {step.label}
                     </p>
-                    <p className="text-[10px] text-gray-400 hidden sm:block">
+                    <p className="text-[10px] text-gray-400 hidden sm:block text-center">
                       {step.desc}
                     </p>
                   </div>
@@ -154,16 +157,26 @@ export default function OrderSuccessModal({
               </div>
             </div>
 
-            {/* Total */}
+            {/* Amount */}
             <div className="flex justify-between items-center py-3 border-t border-gray-100 mb-4">
-              <span className="text-sm text-gray-500">Total Paid</span>
+              <span className="text-sm text-gray-500">
+                {paymentMethod === "cod"
+                  ? "Amount Payable on Delivery"
+                  : "Total Paid"}
+              </span>
               <span className="text-lg font-bold text-[#FF5A1F]">
-                ₹{total?.toLocaleString() || 0}
+                ₹
+                {(
+                  order?.totalAmount ||
+                  order?.amount ||
+                  total ||
+                  0
+                ).toLocaleString()}
               </span>
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Link
                 to="/search"
                 onClick={onClose}

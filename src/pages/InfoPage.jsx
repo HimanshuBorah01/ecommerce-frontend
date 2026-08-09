@@ -3,6 +3,8 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import PolicyPageLayout from "@/components/info/PolicyPageLayout";
+
+import aboutImage from "../images/about_image.jpeg";
 import {
   Mail,
   Phone,
@@ -895,7 +897,7 @@ function AboutPage() {
             className="rounded-2xl overflow-hidden shadow-lg h-64 md:h-80"
           >
             <img
-              src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80"
+              src={aboutImage}
               alt="Shopy team"
               className="w-full h-full object-cover"
             />

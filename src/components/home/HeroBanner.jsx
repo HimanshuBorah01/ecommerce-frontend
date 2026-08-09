@@ -43,7 +43,7 @@ const slides = [
     secondary: 'New Arrivals',
     secondaryTo: '/search?sort=newest',
     bg: 'from-pink-50 to-rose-50',
-    image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&q=80',
+    image: 'https://i.pinimg.com/1200x/12/5a/ff/125aff3ab35c15cbf950b85f11dd7bcb.jpg',
     imageAlt: 'Fashion collection',
   },
 ];

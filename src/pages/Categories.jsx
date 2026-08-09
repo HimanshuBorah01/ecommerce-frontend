@@ -116,7 +116,7 @@ export default function Categories() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
         {categories.map((cat) => {
           const slug = cat.slug || cat.name?.toLowerCase().replace(/\s+/g, "-");
           const image = cat.image || cat.thumbnail || CATEGORY_IMAGES[slug];
@@ -124,9 +124,9 @@ export default function Categories() {
             <Link
               key={cat._id || slug || cat.name}
               to={slug ? `/search?category=${slug}` : "/search"}
-              className="bg-white rounded-xl border border-gray-200 p-4 md:p-5 hover:shadow-md hover:border-orange-200 transition-all group"
+              className="bg-white rounded-xl border border-gray-200 p-4 md:p-5 hover:shadow-md hover:border-orange-200 transition-all group min-w-0 overflow-hidden"
             >
-              <div className="flex items-center gap-3 md:gap-4 mb-2 md:mb-3">
+              <div className="flex items-center gap-3 md:gap-4 mb-2 md:mb-3 min-w-0">
                 {image ? (
                   <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden bg-orange-50 flex-shrink-0">
                     <img
@@ -140,8 +140,8 @@ export default function Categories() {
                     <LayoutGrid size={24} className="text-[#FF5A1F]" />
                   </div>
                 )}
-                <div className="min-w-0">
-                  <h3 className="font-bold text-sm md:text-base text-[#111827] group-hover:text-[#FF5A1F] transition-colors truncate">
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-bold text-sm md:text-base text-[#111827] group-hover:text-[#FF5A1F] transition-colors">
                     {cat.name}
                   </h3>
                   {cat.productCount && (
@@ -151,10 +151,8 @@ export default function Categories() {
                   )}
                 </div>
               </div>
-              <p className="text-xs text-gray-500 mb-3 line-clamp-2">
-                {cat.description}
-              </p>
-              <span className="text-sm font-medium text-[#FF5A1F] group-hover:underline flex items-center gap-1">
+              <p className="text-xs text-gray-500 mb-3">{cat.description}</p>
+              <span className="text-sm font-medium text-[#FF5A1F] group-hover:underline flex items-center gap-1 whitespace-nowrap">
                 Shop Now →
               </span>
             </Link>

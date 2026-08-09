@@ -24,6 +24,7 @@ const normalizeUser = (data) => {
     phone: u.phone,
     role: u.role,
     isEmailVerified: u.isEmailVerified,
+    createdAt: u.createdAt,
   };
 };
 

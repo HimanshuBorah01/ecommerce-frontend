@@ -115,9 +115,10 @@ export default function Orders() {
             const statusInfo = ORDER_STATUSES[status] || ORDER_STATUSES.pending;
             const currentStep = statusSteps.indexOf(status);
             return (
-              <div
+              <Link
                 key={order._id || order.id}
-                className="bg-white rounded-xl border border-gray-200 overflow-hidden"
+                to={`/account/orders/${order._id || order.id}`}
+                className="block bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-[#FF5A1F] hover:shadow-md transition-all group"
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3 md:p-4 border-b border-gray-100 bg-gray-50">
                   <div className="flex flex-wrap items-center gap-3 md:gap-4">
@@ -192,7 +193,7 @@ export default function Orders() {
                     status !== "returned" &&
                     status !== "refunded" && (
                       <div className="mt-4 mb-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
-                        <div className="flex items-center min-w-[560px] md:min-w-0">
+                        <div className="flex items-start min-w-[560px] md:min-w-0">
                           {statusSteps.map((s, i) => {
                             const Icon = stepIcons[i];
                             const done = i <= currentStep;
@@ -200,29 +201,30 @@ export default function Orders() {
                             return (
                               <div
                                 key={s}
-                                className="flex items-center flex-1 last:flex-none flex-col"
+                                className="relative flex-1 last:flex-none"
                               >
-                                <div className="flex items-center w-full">
+                                {/* Connector line between icons */}
+                                {i < statusSteps.length - 1 && (
                                   <div
-                                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0 ${done ? "bg-green-500 text-white" : "bg-gray-200 text-gray-400"}`}
+                                    className={`absolute top-4 left-[calc(50%+16px)] right-[calc(-50%+16px)] h-0.5 ${i < currentStep ? "bg-green-500" : "bg-gray-200"}`}
+                                  />
+                                )}
+                                <div className="flex flex-col items-center">
+                                  <div
+                                    className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center text-xs ${done ? "bg-green-500 text-white" : "bg-gray-200 text-gray-400"}`}
                                   >
                                     <Icon size={14} />
                                   </div>
-                                  {i < statusSteps.length - 1 && (
-                                    <div
-                                      className={`flex-1 h-0.5 mx-1 ${i < currentStep ? "bg-green-500" : "bg-gray-200"}`}
-                                    />
-                                  )}
+                                  <span
+                                    className={`mt-1.5 text-[10px] md:text-xs text-center capitalize whitespace-nowrap ${
+                                      done
+                                        ? "text-green-600 font-semibold"
+                                        : "text-gray-400"
+                                    }`}
+                                  >
+                                    {label}
+                                  </span>
                                 </div>
-                                <span
-                                  className={`text-[10px] md:text-xs mt-1.5 text-center capitalize whitespace-nowrap ${
-                                    done
-                                      ? "text-green-600 font-semibold"
-                                      : "text-gray-400"
-                                  }`}
-                                >
-                                  {label}
-                                </span>
                               </div>
                             );
                           })}
@@ -247,15 +249,12 @@ export default function Orders() {
                     <p className="text-sm text-gray-500">
                       {(order.items || []).length} item(s)
                     </p>
-                    <Link
-                      to={`/account/orders/${order._id || order.id}`}
-                      className="text-sm text-[#FF5A1F] font-medium hover:underline flex items-center gap-1"
-                    >
+                    <span className="text-sm text-[#FF5A1F] font-medium flex items-center gap-1 group-hover:underline">
                       View Details <ChevronRight size={14} />
-                    </Link>
+                    </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>

@@ -4,6 +4,16 @@ import { api } from "@/lib/api";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import EmptyState from "@/components/ui/EmptyState";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   MapPin,
   Plus,
   Edit2,
@@ -53,6 +63,7 @@ export default function Addresses() {
   const [form, setForm] = useState(empty);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const reset = () => {
     setForm(empty);
@@ -165,8 +176,14 @@ export default function Addresses() {
     setShowForm(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this address?")) return;
+  const handleDelete = (id) => {
+    setDeleteTarget(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const id = deleteTarget;
+    setDeleteTarget(null);
 
     try {
       await api.delete(`/addresses/${id}`);
@@ -452,6 +469,33 @@ export default function Addresses() {
           ))}
         </div>
       )}
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Address?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this address? This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

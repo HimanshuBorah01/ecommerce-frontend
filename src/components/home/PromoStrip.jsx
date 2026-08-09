@@ -75,36 +75,31 @@ const promos = [
 
 export default function PromoStrip({ type = "default" }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 my-4 md:my-6">
+    <div className="grid grid-cols-2 xl:grid-cols-4 gap-2 md:gap-3 my-4 md:my-6">
       {promos.map(
         ({ icon: Icon, label, sub, to, color, iconColor, countdown }) => (
           <Link
             key={label}
             to={to}
-            className={`flex items-center gap-2 md:gap-3 p-3 md:p-4 rounded-xl border ${color} hover:shadow-md transition-all group ${countdown ? "col-span-2 md:col-span-1" : ""}`}
+            className={`flex flex-col items-center text-center p-3 md:p-4 rounded-xl border ${color} hover:shadow-md transition-all group overflow-hidden min-w-0`}
           >
             <div
-              className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center flex-shrink-0 ${iconColor}`}
+              className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center flex-shrink-0 mb-1.5 ${iconColor}`}
             >
-              <Icon size={16} className="md:hidden" />
-              <Icon size={18} className="hidden md:block" />
+              <Icon size={18} className="md:hidden" />
+              <Icon size={20} className="hidden md:block" />
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs md:text-sm font-bold text-[#111827] group-hover:text-[#FF5A1F] transition-colors truncate">
-                {label}
-              </p>
-              <p className="text-[10px] md:text-xs text-gray-500 truncate">
-                {sub}
-              </p>
-              {countdown && (
-                <div className="flex items-center gap-1 mt-1">
-                  <Countdown />
-                </div>
-              )}
-            </div>
-            <span className="text-[#FF5A1F] text-sm font-medium group-hover:translate-x-1 transition-transform flex-shrink-0">
-              →
-            </span>
+            <p className="text-xs md:text-sm font-bold text-[#111827] group-hover:text-[#FF5A1F] transition-colors leading-tight">
+              {label}
+            </p>
+            <p className="text-[10px] md:text-xs text-gray-500 mt-0.5 leading-snug">
+              {sub}
+            </p>
+            {countdown && (
+              <div className="flex items-center gap-1 mt-2 justify-center">
+                <Countdown />
+              </div>
+            )}
           </Link>
         ),
       )}

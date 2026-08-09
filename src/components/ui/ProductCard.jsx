@@ -81,108 +81,105 @@ export default function ProductCard({ product }) {
 
   return (
     <Link to={`/product/${id}`} className="block group">
-      <div style={{ perspective: 1000 }}>
-        <motion.div
-          whileHover={{ y: -6, rotateX: 2, rotateY: -2, scale: 1.02 }}
-          transition={{ duration: 0.3 }}
-          style={{ transformStyle: "preserve-3d" }}
-          className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden hover:shadow-xl hover:border-orange-200 transition-shadow duration-300"
-        >
-          {/* Image */}
-          <div className="relative aspect-[3/4] bg-gray-50 overflow-hidden">
-            {discount > 0 && (
-              <div className="absolute top-2 left-2 z-10 bg-[#FF5A1F] text-white text-xs font-bold px-2 py-0.5 rounded">
-                {discount}% OFF
-              </div>
-            )}
+      <motion.div
+        whileHover={{ y: -4, scale: 1.01 }}
+        transition={{ duration: 0.2 }}
+        className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden hover:shadow-lg hover:border-orange-200 transition-shadow duration-300"
+      >
+        {/* Image */}
+        <div className="relative aspect-[3/4] bg-gray-50 overflow-hidden">
+          {discount > 0 && (
+            <div className="absolute top-2 left-2 z-10 bg-[#FF5A1F] text-white text-xs font-bold px-2 py-0.5 rounded">
+              {discount}% OFF
+            </div>
+          )}
+          <button
+            onClick={handleWishlist}
+            className="absolute top-2 right-2 z-10 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform"
+          >
+            <Heart
+              size={16}
+              className={
+                wishlisted ? "fill-[#EC4899] text-[#EC4899]" : "text-gray-400"
+              }
+            />
+          </button>
+
+          {image && (
+            <img
+              src={image}
+              alt={name}
+              className={`w-full h-full object-contain p-4 transition-opacity duration-300 ${hoverImage ? "group-hover:opacity-0" : ""}`}
+            />
+          )}
+          {hoverImage && (
+            <img
+              src={hoverImage}
+              alt={name}
+              className="absolute inset-0 w-full h-full object-contain p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            />
+          )}
+          {!image && (
+            <div className="w-full h-full flex items-center justify-center text-gray-300">
+              <ShoppingCart size={48} />
+            </div>
+          )}
+
+          {/* Quick add overlay */}
+          <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
             <button
-              onClick={handleWishlist}
-              className="absolute top-2 right-2 z-10 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform"
+              onClick={handleAddToCart}
+              disabled={adding || !inStock}
+              className="w-full py-2.5 bg-[#111827] text-white text-sm font-medium hover:bg-[#FF5A1F] transition-colors disabled:bg-gray-300 flex items-center justify-center gap-2"
             >
-              <Heart
-                size={16}
-                className={
-                  wishlisted ? "fill-[#EC4899] text-[#EC4899]" : "text-gray-400"
-                }
-              />
+              <ShoppingCart size={14} />
+              {adding ? "Adding..." : inStock ? "Quick Add" : "Out of Stock"}
             </button>
-
-            {image && (
-              <img
-                src={image}
-                alt={name}
-                className={`w-full h-full object-contain p-4 transition-opacity duration-300 ${hoverImage ? "group-hover:opacity-0" : ""}`}
-              />
-            )}
-            {hoverImage && (
-              <img
-                src={hoverImage}
-                alt={name}
-                className="absolute inset-0 w-full h-full object-contain p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              />
-            )}
-            {!image && (
-              <div className="w-full h-full flex items-center justify-center text-gray-300">
-                <ShoppingCart size={48} />
-              </div>
-            )}
-
-            {/* Quick add overlay */}
-            <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-              <button
-                onClick={handleAddToCart}
-                disabled={adding || !inStock}
-                className="w-full py-2.5 bg-[#111827] text-white text-sm font-medium hover:bg-[#FF5A1F] transition-colors disabled:bg-gray-300 flex items-center justify-center gap-2"
-              >
-                <ShoppingCart size={14} />
-                {adding ? "Adding..." : inStock ? "Quick Add" : "Out of Stock"}
-              </button>
-            </div>
           </div>
+        </div>
 
-          {/* Info */}
-          <div className="p-2.5 md:p-3">
-            <p className="text-[10px] md:text-xs text-gray-400 mb-0.5 truncate">
-              {product.brand || product.category}
-            </p>
-            <h3 className="text-xs md:text-sm font-medium text-[#111827] line-clamp-2 mb-1 md:mb-1.5 group-hover:text-[#FF5A1F] transition-colors">
-              {name}
-            </h3>
+        {/* Info */}
+        <div className="p-2.5 md:p-3">
+          <p className="text-[10px] md:text-xs text-gray-400 mb-0.5 truncate">
+            {product.brand || product.category}
+          </p>
+          <h3 className="text-xs md:text-sm font-medium text-[#111827] line-clamp-2 mb-1 md:mb-1.5 group-hover:text-[#FF5A1F] transition-colors">
+            {name}
+          </h3>
 
-            {/* Rating */}
-            {rating > 0 && (
-              <div className="flex items-center gap-1 mb-1.5 md:mb-2">
-                <div className="flex">{renderStars(rating)}</div>
-                <span className="text-[10px] md:text-xs text-gray-500">
-                  ({reviewCount.toLocaleString()})
-                </span>
-              </div>
-            )}
-
-            {/* Price */}
-            <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
-              <span className="text-sm md:text-base font-bold text-[#111827]">
-                ₹{price.toLocaleString()}
+          {/* Rating */}
+          {rating > 0 && (
+            <div className="flex items-center gap-1 mb-1.5 md:mb-2">
+              <div className="flex">{renderStars(rating)}</div>
+              <span className="text-[10px] md:text-xs text-gray-500">
+                ({reviewCount.toLocaleString()})
               </span>
-              {originalPrice && originalPrice > price && (
-                <span className="text-[10px] md:text-xs text-gray-400 line-through">
-                  ₹{originalPrice.toLocaleString()}
-                </span>
-              )}
             </div>
+          )}
 
-            {inStock ? (
-              <p className="text-[10px] md:text-xs text-green-600 font-medium mt-0.5 md:mt-1">
-                In Stock
-              </p>
-            ) : (
-              <p className="text-[10px] md:text-xs text-red-500 font-medium mt-0.5 md:mt-1">
-                Out of Stock
-              </p>
+          {/* Price */}
+          <div className="flex items-center gap-1.5 md:gap-2 flex-wrap">
+            <span className="text-sm md:text-base font-bold text-[#111827]">
+              ₹{price.toLocaleString()}
+            </span>
+            {originalPrice && originalPrice > price && (
+              <span className="text-[10px] md:text-xs text-gray-400 line-through">
+                ₹{originalPrice.toLocaleString()}
+              </span>
             )}
           </div>
-        </motion.div>
-      </div>
+
+          {inStock ? (
+            <p className="text-[10px] md:text-xs text-green-600 font-medium mt-0.5 md:mt-1">
+              In Stock
+            </p>
+          ) : (
+            <p className="text-[10px] md:text-xs text-red-500 font-medium mt-0.5 md:mt-1">
+              Out of Stock
+            </p>
+          )}
+        </div>
+      </motion.div>
     </Link>
   );
 }
