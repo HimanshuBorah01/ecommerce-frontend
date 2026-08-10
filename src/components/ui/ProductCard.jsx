@@ -82,7 +82,6 @@ export default function ProductCard({ product }) {
   return (
     <Link to={`/product/${id}`} className="block group">
       <motion.div
-        whileHover={{ y: -4, scale: 1.01 }}
         transition={{ duration: 0.2 }}
         className="bg-white rounded-xl border border-[#E5E7EB] overflow-hidden hover:shadow-lg hover:border-orange-200 transition-shadow duration-300"
       >

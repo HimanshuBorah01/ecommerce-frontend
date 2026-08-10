@@ -88,13 +88,17 @@ export default function Header() {
         <div className="max-w-[1400px] mx-auto px-3 md:px-4 py-2.5 md:py-3 flex items-center gap-2 md:gap-4">
           {/* Mobile menu */}
           <button
-            className="md:hidden p-1"
+            type="button"
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            className="md:hidden relative z-20 flex h-10 w-10 flex-shrink-0 cursor-pointer touch-manipulation items-center justify-center rounded-full text-gray-700 transition-colors hover:bg-orange-50 hover:text-[#FF5A1F]"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
 
-          <Logo />
+          <div className="scale-90 origin-left md:scale-100">
+            <Logo />
+          </div>
 
           {/* Search */}
           <div className="hidden md:flex flex-1 mx-4">
@@ -104,40 +108,44 @@ export default function Header() {
           {/* Right actions */}
           <div className="flex items-center gap-2 md:gap-4 ml-auto md:ml-0">
             {/* Wishlist */}
-            <Link
-              to="/account/wishlist"
-              className="relative flex flex-col items-center text-gray-600 hover:text-[#FF5A1F] transition-colors group"
+            <button
+              type="button"
+              onClick={() => navigate("/account/wishlist")}
+              aria-label="Wishlist"
+              className="relative z-20 inline-flex h-10 w-10 flex-shrink-0 cursor-pointer touch-manipulation flex-col items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-orange-50 hover:text-[#FF5A1F] md:h-auto md:w-auto md:rounded-none md:hover:bg-transparent group"
             >
               <Heart
                 size={22}
-                className="group-hover:scale-110 transition-transform"
+                className="pointer-events-none group-hover:scale-110 transition-transform"
               />
               {wishlistCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-[#FF5A1F] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
                   {wishlistCount}
                 </span>
               )}
-              <span className="hidden lg:block text-[10px] mt-0.5">
+              <span className="hidden lg:block text-[10px] mt-0.5 pointer-events-none">
                 Wishlist
               </span>
-            </Link>
+            </button>
 
             {/* Cart */}
-            <Link
-              to="/cart"
-              className="relative flex flex-col items-center text-gray-600 hover:text-[#FF5A1F] transition-colors group"
+            <button
+              type="button"
+              onClick={() => navigate("/cart")}
+              aria-label="Cart"
+              className="relative z-20 inline-flex h-10 w-10 flex-shrink-0 cursor-pointer touch-manipulation flex-col items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-orange-50 hover:text-[#FF5A1F] md:h-auto md:w-auto md:rounded-none md:hover:bg-transparent group"
             >
               <ShoppingCart
                 size={22}
-                className="group-hover:scale-110 transition-transform"
+                className="pointer-events-none group-hover:scale-110 transition-transform"
               />
               {cartCount > 0 && (
                 <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-[#FF5A1F] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
                   {cartCount}
                 </span>
               )}
-              <span className="hidden lg:block text-[10px] mt-0.5">Cart</span>
-            </Link>
+              <span className="hidden lg:block text-[10px] mt-0.5 pointer-events-none">Cart</span>
+            </button>
 
             {/* User */}
             {isAuthenticated ? (

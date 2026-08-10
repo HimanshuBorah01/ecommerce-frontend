@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Zap, CreditCard, Percent, Gift } from "lucide-react";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 function Countdown({ targetHours = 8 }) {
   const [time, setTime] = useState({ h: targetHours, m: 0, s: 0 });
@@ -77,30 +78,38 @@ export default function PromoStrip({ type = "default" }) {
   return (
     <div className="grid grid-cols-2 xl:grid-cols-4 gap-2 md:gap-3 my-4 md:my-6">
       {promos.map(
-        ({ icon: Icon, label, sub, to, color, iconColor, countdown }) => (
-          <Link
+        ({ icon: Icon, label, sub, to, color, iconColor, countdown }, i) => (
+          <motion.div
             key={label}
-            to={to}
-            className={`flex flex-col items-center text-center p-3 md:p-4 rounded-xl border ${color} hover:shadow-md transition-all group overflow-hidden min-w-0`}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ delay: i * 0.06, duration: 0.35, ease: "easeOut" }}
+            whileHover={{ y: -4 }}
           >
-            <div
-              className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center flex-shrink-0 mb-1.5 ${iconColor}`}
+            <Link
+              to={to}
+              className={`flex h-full flex-col items-center text-center p-3 md:p-4 rounded-xl border ${color} hover:shadow-lg hover:shadow-gray-200/70 transition-all group overflow-hidden min-w-0`}
             >
-              <Icon size={18} className="md:hidden" />
-              <Icon size={20} className="hidden md:block" />
-            </div>
-            <p className="text-xs md:text-sm font-bold text-[#111827] group-hover:text-[#FF5A1F] transition-colors leading-tight">
-              {label}
-            </p>
-            <p className="text-[10px] md:text-xs text-gray-500 mt-0.5 leading-snug">
-              {sub}
-            </p>
-            {countdown && (
-              <div className="flex items-center gap-1 mt-2 justify-center">
-                <Countdown />
+              <div
+                className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center flex-shrink-0 mb-1.5 shadow-sm ring-1 ring-white/60 ${iconColor}`}
+              >
+                <Icon size={18} className="md:hidden transition-transform duration-300 group-hover:scale-110" />
+                <Icon size={20} className="hidden md:block transition-transform duration-300 group-hover:scale-110" />
               </div>
-            )}
-          </Link>
+              <p className="text-xs md:text-sm font-bold text-[#111827] group-hover:text-[#FF5A1F] transition-colors leading-tight">
+                {label}
+              </p>
+              <p className="text-[10px] md:text-xs text-gray-500 mt-0.5 leading-snug">
+                {sub}
+              </p>
+              {countdown && (
+                <div className="flex items-center gap-1 mt-2 justify-center">
+                  <Countdown />
+                </div>
+              )}
+            </Link>
+          </motion.div>
         ),
       )}
     </div>
