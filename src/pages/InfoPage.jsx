@@ -386,44 +386,60 @@ const POLICY_PAGES = {
 };
 
 const FAQ_TOPICS = [
-  { topic: "All Questions", count: 8 },
-  { topic: "Orders", count: 3 },
-  { topic: "Payments", count: 1 },
-  { topic: "Shipping & Delivery", count: 2 },
-  { topic: "Returns & Refunds", count: 1 },
-  { topic: "Account & Profile", count: 1 },
+  "All Questions",
+  "Orders",
+  "Payments",
+  "Shipping & Delivery",
+  "Returns & Refunds",
+  "Account & Profile",
 ];
 
 const FAQ_ITEMS = [
   {
+    id: "place-order",
+    topic: "Orders",
     q: "How can I place an order on Shopy?",
     a: "Placing an order is easy! Browse your favorite products, add them to the cart, and proceed to checkout. Enter your shipping address, choose a payment method, and confirm your order. You'll receive an order confirmation via email and SMS.",
   },
   {
+    id: "track-order",
+    topic: "Orders",
     q: "How do I track my order?",
     a: "Go to \"My Orders\" in your account, click on the order you want to track, and you'll see the current status and tracking information. You'll also receive tracking updates via email and SMS once your order is shipped.",
   },
   {
+    id: "return-policy",
+    topic: "Returns & Refunds",
     q: "What is the return policy?",
     a: "We offer a 7-day return policy on most products. Items must be unused, in original packaging, with all tags intact. Some categories like innerwear and personal care items are non-returnable.",
   },
   {
+    id: "cancel-order",
+    topic: "Orders",
     q: "How do I cancel my order?",
     a: 'You can cancel your order from "My Orders" before it has been shipped. Once shipped, cancellation is not possible, but you can return the product after delivery for a full refund.',
   },
   {
+    id: "payment-methods",
+    topic: "Payments",
     q: "What payment methods are accepted?",
     a: "We accept Credit/Debit Cards, UPI, Net Banking, and Cash on Delivery (COD). All online payments are secured through trusted payment gateways with 256-bit SSL encryption.",
   },
   {
+    id: "delivery-time",
+    topic: "Shipping & Delivery",
     q: "How long does delivery take?",
     a: "Standard delivery takes 3-5 business days. Express delivery (1-2 days) is available in select cities for ₹99 extra. Remote areas may take additional time depending on the courier partner.",
   },
   {
+    id: "free-shipping",
+    topic: "Shipping & Delivery",
     q: "Do you offer free shipping?",
     a: "Yes, free shipping is available on all orders above ₹499. Orders below ₹499 incur a flat ₹49 shipping fee. COD orders may have an additional ₹40 handling charge.",
   },
   {
+    id: "change-delivery-address",
+    topic: "Account & Profile",
     q: "How do I change my delivery address?",
     a: 'You can add or edit addresses in "My Addresses" under your account. During checkout, you can select from your saved addresses or enter a new one. You cannot change the address after the order is shipped.',
   },
@@ -437,8 +453,9 @@ export default function InfoPage() {
     message: "",
   });
   const [contactSent, setContactSent] = useState(false);
-  const [faqOpen, setFaqOpen] = useState(0);
-  const [activeTopic, setActiveTopic] = useState("All Questions");
+  const [faqOpen, setFaqOpen] = useState(FAQ_ITEMS[0].id);
+  const [selectedTopic, setSelectedTopic] = useState("All Questions");
+  const [highlightedTopic, setHighlightedTopic] = useState("All Questions");
 
   // Policy pages
   if (POLICY_PAGES[slug]) {
@@ -591,6 +608,27 @@ export default function InfoPage() {
 
   // FAQ page
   if (slug === "faq") {
+    const visibleFaqItems =
+      selectedTopic === "All Questions"
+        ? FAQ_ITEMS
+        : FAQ_ITEMS.filter((item) => item.topic === selectedTopic);
+
+    const handleTopicClick = (topic) => {
+      const nextOpenItem =
+        topic === "All Questions"
+          ? FAQ_ITEMS[0]
+          : FAQ_ITEMS.find((item) => item.topic === topic);
+
+      setSelectedTopic(topic);
+      setHighlightedTopic(topic);
+      setFaqOpen(nextOpenItem?.id ?? "");
+    };
+
+    const handleFaqClick = (item) => {
+      setHighlightedTopic(item.topic);
+      setFaqOpen(faqOpen === item.id ? "" : item.id);
+    };
+
     return (
       <div className="max-w-[1400px] mx-auto px-3 md:px-4 py-4 md:py-6">
         <Breadcrumb items={[{ label: "Home", to: "/" }, { label: "FAQ" }]} />
@@ -613,14 +651,13 @@ export default function InfoPage() {
                   Browse by Topic
                 </h3>
                 <nav className="space-y-1">
-                  {FAQ_TOPICS.map((t) => (
+                  {FAQ_TOPICS.map((topic) => (
                     <button
-                      key={t.topic}
-                      onClick={() => setActiveTopic(t.topic)}
-                      className={`flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm transition-colors ${activeTopic === t.topic ? "bg-orange-50 text-[#FF5A1F] font-medium" : "text-gray-600 hover:bg-gray-50"}`}
+                      key={topic}
+                      onClick={() => handleTopicClick(topic)}
+                      className={`flex items-center w-full px-3 py-2 rounded-lg text-left text-sm transition-colors ${highlightedTopic === topic ? "bg-orange-50 text-[#FF5A1F] font-medium" : "text-gray-600 hover:bg-gray-50"}`}
                     >
-                      <span>{t.topic}</span>
-                      <span className="text-xs text-gray-400">{t.count}</span>
+                      {topic}
                     </button>
                   ))}
                 </nav>
@@ -650,25 +687,25 @@ export default function InfoPage() {
               />
             </div>
             <div className="space-y-2">
-              {FAQ_ITEMS.map((item, i) => (
+              {visibleFaqItems.map((item) => (
                 <div
-                  key={i}
+                  key={item.id}
                   className="bg-white rounded-xl border border-gray-200 overflow-hidden"
                 >
                   <button
-                    onClick={() => setFaqOpen(faqOpen === i ? -1 : i)}
+                    onClick={() => handleFaqClick(item)}
                     className="flex items-center justify-between w-full p-4 md:p-5 text-left hover:bg-gray-50 transition-colors"
                   >
                     <span className="font-medium text-sm md:text-base text-[#111827] pr-4">
-                      {i + 1}. {item.q}
+                      {item.q}
                     </span>
                     <ChevronDown
                       size={20}
-                      className={`text-[#FF5A1F] flex-shrink-0 transition-transform duration-300 ${faqOpen === i ? "rotate-180" : ""}`}
+                      className={`text-[#FF5A1F] flex-shrink-0 transition-transform duration-300 ${faqOpen === item.id ? "rotate-180" : ""}`}
                     />
                   </button>
                   <AnimatePresence initial={false}>
-                    {faqOpen === i && (
+                    {faqOpen === item.id && (
                       <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}

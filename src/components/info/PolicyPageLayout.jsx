@@ -1,43 +1,91 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
-import { ChevronDown, ArrowRight } from "lucide-react";
+import {
+  AlertTriangle,
+  Ban,
+  BarChart3,
+  CheckCircle,
+  ChevronDown,
+  CircleDollarSign,
+  ClipboardList,
+  Clock,
+  Cookie,
+  CreditCard,
+  ExternalLink,
+  FileText,
+  Globe2,
+  Handshake,
+  Lock,
+  Mail,
+  MapPin,
+  Package,
+  RefreshCw,
+  Scale,
+  ScrollText,
+  Settings,
+  Share2,
+  ShieldCheck,
+  Store,
+  Tag,
+  Target,
+  Timer,
+  Truck,
+  User,
+  UserCheck,
+} from "lucide-react";
 
 const ICONS = {
-  "Information We Collect": "📋",
-  "How We Use Your Information": "🎯",
-  "How We Share Your Information": "🔗",
-  "Cookies and Tracking Technologies": "🍪",
-  "Data Security": "🔒",
-  "Your Rights and Choices": "👤",
-  "Third-Party Links": "🌐",
-  "Children's Privacy": "👶",
-  "Changes to This Policy": "📝",
-  "Contact Us": "📧",
-  "Return Eligibility": "✅",
-  "Return Window": "⏰",
-  "Non-Returnable Items": "🚫",
-  "Return Process": "📦",
-  "Refund Process": "💰",
-  Exchange: "🔄",
-  "Damaged or Defective Items": "⚠️",
-  "Important Notes": "📌",
-  "Shipping Charges": "🚚",
-  "Delivery Time": "⏱️",
-  "Order Tracking": "📍",
-  "International Shipping": "🌍",
-  "Acceptance of Terms": "📜",
-  "User Account": "👤",
-  "Product Information": "🏷️",
-  "Limitation of Liability": "⚖️",
-  "What Are Cookies": "🍪",
-  "Types of Cookies We Use": "📊",
-  "Managing Cookies": "⚙️",
-  "Third-Party Cookies": "🌐",
-  "Become a Seller": "🏪",
-  "Seller Requirements": "📋",
-  "Commission & Fees": "💳",
-  "Seller Support": "🤝",
+  "Information We Collect": ClipboardList,
+  "How We Use Your Information": Target,
+  "How We Share Your Information": Share2,
+  "Cookies and Tracking Technologies": Cookie,
+  "Data Security": Lock,
+  "Your Rights and Choices": UserCheck,
+  "Third-Party Links": ExternalLink,
+  "Children's Privacy": ShieldCheck,
+  "Changes to This Policy": FileText,
+  "Contact Us": Mail,
+  "Return Eligibility": CheckCircle,
+  "Return Window": Clock,
+  "Non-Returnable Items": Ban,
+  "Return Process": Package,
+  "Refund Process": CircleDollarSign,
+  Exchange: RefreshCw,
+  "Damaged or Defective Items": AlertTriangle,
+  "Important Notes": FileText,
+  "Shipping Charges": Truck,
+  "Delivery Time": Timer,
+  "Order Processing": Package,
+  "Order Tracking": MapPin,
+  "Delivery Areas": MapPin,
+  "International Shipping": Globe2,
+  "Failed Deliveries": AlertTriangle,
+  "Acceptance of Terms": ScrollText,
+  Introduction: ScrollText,
+  "Use of Our Website": FileText,
+  "User Accounts": User,
+  "Products and Pricing": Tag,
+  "Orders and Payments": CreditCard,
+  "Shipping and Delivery": Truck,
+  "Returns and Refunds": RefreshCw,
+  "Intellectual Property": ShieldCheck,
+  "Limitation of Liability": Scale,
+  "Changes to Terms": FileText,
+  "What Are Cookies": Cookie,
+  "Types of Cookies We Use": BarChart3,
+  "Essential Cookies": Lock,
+  "Analytics Cookies": BarChart3,
+  "Managing Cookies": Settings,
+  "Third-Party Cookies": Globe2,
+  "Become a Seller": Store,
+  "Seller Requirements": ClipboardList,
+  "Commission & Fees": CreditCard,
+  "Product Listings": Tag,
+  "Order Fulfillment": Package,
+  Payments: CircleDollarSign,
+  "Returns & Refunds": RefreshCw,
+  "Seller Support": Handshake,
 };
 
 export default function PolicyPageLayout({
@@ -56,6 +104,11 @@ export default function PolicyPageLayout({
     setOpenIndex(index);
     const el = document.getElementById(`section-${index}`);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const toggleSection = (index) => {
+    setActiveSection(index);
+    setOpenIndex(openIndex === index ? -1 : index);
   };
 
   return (
@@ -91,15 +144,14 @@ export default function PolicyPageLayout({
             <nav className="space-y-1">
               {sections.map((section, i) => (
                 <button
-                  key={i}
+                  key={section.heading}
                   onClick={() => scrollToSection(i)}
-                  className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                  className={`flex items-center w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                     activeSection === i
                       ? "bg-orange-50 text-[#FF5A1F] font-medium"
                       : "text-gray-600 hover:bg-gray-50"
                   }`}
                 >
-                  <span className="text-xs font-mono">{i + 1}.</span>
                   <span className="truncate">{section.heading}</span>
                 </button>
               ))}
@@ -109,53 +161,64 @@ export default function PolicyPageLayout({
 
         {/* Accordion content */}
         <div className="space-y-3">
-          {sections.map((section, i) => (
-            <motion.div
-              key={i}
-              id={`section-${i}`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="bg-white rounded-xl border border-gray-200 overflow-hidden"
-            >
-              <button
-                onClick={() => setOpenIndex(openIndex === i ? -1 : i)}
-                className="flex items-center gap-3 w-full p-4 md:p-5 text-left hover:bg-gray-50 transition-colors"
+          {sections.map((section, i) => {
+            const SectionIcon = ICONS[section.heading] || FileText;
+            const isOpen = openIndex === i;
+            const isActive = activeSection === i;
+
+            return (
+              <motion.div
+                key={section.heading}
+                id={`section-${i}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className={`bg-white rounded-xl border overflow-hidden transition-colors ${
+                  isActive ? "border-orange-200" : "border-gray-200"
+                }`}
               >
-                <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0 text-lg">
-                  {ICONS[section.heading] || "📄"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="font-bold text-sm md:text-base text-[#111827]">
-                    {i + 1}. {section.heading}
-                  </h2>
-                </div>
-                <ChevronDown
-                  size={20}
-                  className={`text-gray-400 flex-shrink-0 transition-transform duration-300 ${openIndex === i ? "rotate-180" : ""}`}
-                />
-              </button>
-              <AnimatePresence initial={false}>
-                {openIndex === i && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                <button
+                  onClick={() => toggleSection(i)}
+                  className="flex items-center gap-3 w-full p-4 md:p-5 text-left hover:bg-gray-50 transition-colors"
+                >
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      isActive
+                        ? "bg-orange-50 text-[#FF5A1F]"
+                        : "bg-gray-50 text-gray-500"
+                    }`}
                   >
-                    <div className="px-4 md:px-5 pb-4 md:pb-5 pl-16 md:pl-17">
-                      <p className="text-sm md:text-base text-gray-600 leading-relaxed">
-                        {section.body}
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
-          <button className="btn-outline mt-2 flex items-center gap-2">
-            Read Full Policy <ArrowRight size={16} />
-          </button>
+                    <SectionIcon size={18} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h2 className="font-bold text-sm md:text-base text-[#111827]">
+                      {section.heading}
+                    </h2>
+                  </div>
+                  <ChevronDown
+                    size={20}
+                    className={`text-gray-400 flex-shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="px-4 md:px-5 pb-4 md:pb-5 md:pl-[4.75rem]">
+                        <p className="text-sm md:text-base text-gray-600 leading-relaxed">
+                          {section.body}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
 

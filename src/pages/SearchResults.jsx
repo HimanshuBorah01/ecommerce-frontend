@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -48,11 +48,9 @@ export default function SearchResults() {
   const rating = searchParams.get("rating") || "";
   const inStock = searchParams.get("inStock") || "";
 
-  // Local price state for smooth slider dragging and text input editing.
-  // We only commit to the URL (which triggers a refetch) on release / blur.
+  // Keep price edits local until the user applies them.
   const [localMin, setLocalMin] = useState(minPrice);
   const [localMax, setLocalMax] = useState(maxPrice || "");
-  const commitTimer = useRef(null);
 
   useEffect(() => {
     setLocalMin(minPrice);
@@ -69,9 +67,16 @@ export default function SearchResults() {
     setPage(1);
   };
 
-  const commitPriceDebounced = (min, max) => {
-    if (commitTimer.current) clearTimeout(commitTimer.current);
-    commitTimer.current = setTimeout(() => commitPrice(min, max), 400);
+  const applyCustomPrice = () => {
+    const min = localMin.trim();
+    const max = localMax.trim();
+    commitPrice(min, max);
+  };
+
+  const clearPrice = () => {
+    setLocalMin("");
+    setLocalMax("");
+    commitPrice("", "");
   };
 
   const { data, isLoading, isFetching } = useQuery({
@@ -191,7 +196,7 @@ export default function SearchResults() {
     "Nike",
   ];
 
-  const FilterPanel = () => (
+  const renderFilterPanel = () => (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-[#111827]">Filters</h3>
@@ -255,13 +260,13 @@ export default function SearchResults() {
       </FilterSection>
 
       <FilterSection title="Price">
-        {/* Quick presets */}
-        <div className="flex flex-wrap gap-2 mb-3">
+        <div className="space-y-2">
           {[
             { label: "Under ₹500", min: "", max: "500" },
-            { label: "₹500-₹1000", min: "500", max: "1000" },
-            { label: "₹1000-₹5000", min: "1000", max: "5000" },
-            { label: "₹5000+", min: "5000", max: "" },
+            { label: "₹500 to ₹1,000", min: "500", max: "1000" },
+            { label: "₹1,000 to ₹5,000", min: "1000", max: "5000" },
+            { label: "₹5,000 to ₹10,000", min: "5000", max: "10000" },
+            { label: "Over ₹10,000", min: "10000", max: "" },
           ].map((preset) => {
             const active = minPrice === preset.min && maxPrice === preset.max;
             return (
@@ -272,75 +277,78 @@ export default function SearchResults() {
                   setLocalMax(preset.max);
                   commitPrice(preset.min, preset.max);
                 }}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${active ? "bg-[#FF5A1F] text-white border-[#FF5A1F]" : "bg-white text-gray-600 border-gray-200 hover:border-[#FF5A1F] hover:text-[#FF5A1F]"}`}
+                className={`flex w-full items-center justify-between rounded-lg border px-3 py-2 text-left text-sm transition-colors ${
+                  active
+                    ? "border-[#FF5A1F] bg-orange-50 text-[#FF5A1F] font-medium"
+                    : "border-gray-200 bg-white text-gray-700 hover:border-orange-200 hover:bg-orange-50/60"
+                }`}
               >
-                {preset.label}
+                <span>{preset.label}</span>
+                <span
+                  className={`h-3.5 w-3.5 rounded-full border ${
+                    active
+                      ? "border-[#FF5A1F] bg-[#FF5A1F] ring-2 ring-orange-100"
+                      : "border-gray-300"
+                  }`}
+                />
               </button>
             );
           })}
         </div>
-        {/* Range slider */}
-        <div className="px-1 mb-3">
-          <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-            <span>₹{localMin || 0}</span>
-            <span className="flex-1 text-center">—</span>
-            <span>{localMax ? `₹${localMax}` : "₹50,000+"}</span>
+
+        <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-3">
+          <p className="mb-2 text-xs font-medium text-gray-500">
+            Custom price
+          </p>
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="Min"
+              value={localMin}
+              onChange={(e) => {
+                const v = e.target.value.replace(/[^0-9]/g, "");
+                setLocalMin(v);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") applyCustomPrice();
+              }}
+              className="min-w-0 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-[#FF5A1F]"
+            />
+            <span className="text-xs text-gray-400">to</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="Max"
+              value={localMax}
+              onChange={(e) => {
+                const v = e.target.value.replace(/[^0-9]/g, "");
+                setLocalMax(v);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") applyCustomPrice();
+              }}
+              className="min-w-0 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-[#FF5A1F]"
+            />
           </div>
-          <input
-            type="range"
-            min="0"
-            max="50000"
-            step="100"
-            value={Number(localMax) || 50000}
-            onChange={(e) => {
-              const v = e.target.value;
-              setLocalMax(v === "50000" ? "" : v);
-              commitPriceDebounced(localMin, v === "50000" ? "" : v);
-            }}
-            onPointerUp={() => commitPrice(localMin, localMax)}
-            onMouseUp={() => commitPrice(localMin, localMax)}
-            onTouchEnd={() => commitPrice(localMin, localMax)}
-            className="w-full accent-[#FF5A1F] cursor-pointer"
-          />
-        </div>
-        {/* Manual input */}
-        <div className="flex gap-2">
-          <input
-            type="text"
-            inputMode="numeric"
-            placeholder="₹Min"
-            value={localMin}
-            onChange={(e) => {
-              const v = e.target.value.replace(/[^0-9]/g, "");
-              setLocalMin(v);
-            }}
-            onBlur={() => commitPrice(localMin, localMax)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.target.blur();
-              }
-            }}
-            className="w-1/2 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#FF5A1F] appearance-none"
-            style={{ MozAppearance: "textfield" }}
-          />
-          <input
-            type="text"
-            inputMode="numeric"
-            placeholder="₹Max"
-            value={localMax}
-            onChange={(e) => {
-              const v = e.target.value.replace(/[^0-9]/g, "");
-              setLocalMax(v);
-            }}
-            onBlur={() => commitPrice(localMin, localMax)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.target.blur();
-              }
-            }}
-            className="w-1/2 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#FF5A1F] appearance-none"
-            style={{ MozAppearance: "textfield" }}
-          />
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={applyCustomPrice}
+              className="flex-1 rounded-md bg-[#FF5A1F] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[#E64A19]"
+            >
+              Apply
+            </button>
+            {(minPrice || maxPrice) && (
+              <button
+                type="button"
+                onClick={clearPrice}
+                className="rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-[#FF5A1F] hover:text-[#FF5A1F]"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
       </FilterSection>
 
@@ -398,7 +406,7 @@ export default function SearchResults() {
         {/* Sidebar filters - desktop */}
         <aside className="w-64 flex-shrink-0 hidden md:block">
           <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <FilterPanel />
+            {renderFilterPanel()}
           </div>
         </aside>
 
@@ -510,7 +518,7 @@ export default function SearchResults() {
                 <X size={20} />
               </button>
             </div>
-            <FilterPanel />
+            {renderFilterPanel()}
             <button
               onClick={() => setMobileFiltersOpen(false)}
               className="btn-primary w-full mt-4"
