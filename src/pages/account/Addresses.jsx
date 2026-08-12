@@ -41,11 +41,8 @@ export default function Addresses() {
     queryKey: ["addresses"],
     queryFn: async () => {
       try {
-        const response = await api.get("/addresses");
-        console.log("Fetched addresses:", response);
-        return response;
+        return await api.get("/addresses");
       } catch (error) {
-        console.error("Failed to fetch addresses:", error);
         return [];
       }
     },
@@ -95,36 +92,20 @@ export default function Addresses() {
         type: form.type,
       };
 
-      console.log("🔵 Submitting address:", addressData);
-
       if (editingId) {
         await api.put(`/addresses/${editingId}`, addressData);
-        showMessage("✅ Address updated successfully!", "success");
+        showMessage("Address updated successfully!", "success");
       } else {
         await api.post("/addresses", addressData);
-        showMessage("✅ Address added successfully!", "success");
+        showMessage("Address added successfully!", "success");
       }
 
       reset();
       await refetch();
     } catch (err) {
-      console.error("❌ Full error object:", err);
-      console.error("❌ Error message:", err.message);
-      console.error("❌ Error data:", err.data);
-      console.error("❌ Error status:", err.status);
-
-      // Show error to user
       let errorMsg = "Failed to save address";
 
       if (err.data) {
-        console.log("🔍 Error data type:", typeof err.data);
-        console.log("🔍 Error data keys:", Object.keys(err.data));
-        console.log("🔍 Error data.errors:", err.data.errors);
-        console.log(
-          "🔍 Error data.errors is array?",
-          Array.isArray(err.data.errors),
-        );
-
         // Check for errors array FIRST (before message)
         if (
           err.data.errors &&
@@ -132,10 +113,8 @@ export default function Addresses() {
           err.data.errors.length > 0
         ) {
           // Handle errors array - this is the most specific
-          console.log("✅ Found errors array:", err.data.errors);
           errorMsg = `Validation failed: ${err.data.errors.join(", ")}`;
         } else if (err.data.errors && typeof err.data.errors === "object") {
-          console.log("✅ Found errors object:", err.data.errors);
           const errorList = Object.entries(err.data.errors)
             .map(([field, msg]) => `${field}: ${msg}`)
             .join("; ");
@@ -154,7 +133,7 @@ export default function Addresses() {
         errorMsg = err.message;
       }
 
-      showMessage(`❌ ${errorMsg}`, "error");
+      showMessage(errorMsg, "error");
     } finally {
       setSaving(false);
     }

@@ -45,6 +45,7 @@ export default function SearchResults() {
   const sort = searchParams.get("sort") || "relevance";
   const minPrice = searchParams.get("minPrice") || "";
   const maxPrice = searchParams.get("maxPrice") || "";
+  const selectedBrand = searchParams.get("brand") || "";
   const rating = searchParams.get("rating") || "";
   const inStock = searchParams.get("inStock") || "";
 
@@ -88,6 +89,7 @@ export default function SearchResults() {
       page,
       minPrice,
       maxPrice,
+      selectedBrand,
       rating,
       inStock,
     ],
@@ -102,6 +104,7 @@ export default function SearchResults() {
       if (category) params.category = category;
       if (minPrice) params.minPrice = minPrice;
       if (maxPrice) params.maxPrice = maxPrice;
+      if (selectedBrand) params.brand = selectedBrand;
       return api.get("/products", params);
     },
     keepPreviousData: true,
@@ -109,7 +112,7 @@ export default function SearchResults() {
 
   useEffect(() => {
     setPage(1);
-  }, [q, category]);
+  }, [q, category, selectedBrand]);
 
   const products = data?.products || [];
   // Backend returns totalProducts, not total.
@@ -159,7 +162,33 @@ export default function SearchResults() {
     }
   }, [sort, products]);
 
-  const displayProducts = sortedProducts || products;
+  const normalizeFilterValue = (value) =>
+    String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-");
+
+  const brandFilteredProducts = selectedBrand
+    ? products.filter((product) => {
+        const productBrand = product.brand || product.brandName || "";
+        return (
+          normalizeFilterValue(productBrand) ===
+          normalizeFilterValue(selectedBrand)
+        );
+      })
+    : products;
+
+  const displayProducts = sortedProducts
+    ? selectedBrand
+      ? sortedProducts.filter((product) => {
+          const productBrand = product.brand || product.brandName || "";
+          return (
+            normalizeFilterValue(productBrand) ===
+            normalizeFilterValue(selectedBrand)
+          );
+        })
+      : sortedProducts
+    : brandFilteredProducts;
 
   const updateFilter = (key, val) => {
     const p = new URLSearchParams(searchParams);
@@ -175,7 +204,8 @@ export default function SearchResults() {
     setSearchParams(p);
   };
 
-  const hasFilters = category || minPrice || maxPrice || rating || inStock;
+  const hasFilters =
+    category || minPrice || maxPrice || selectedBrand || rating || inStock;
 
   const filterCategories = facets?.categories || [
     "Electronics",
@@ -243,14 +273,29 @@ export default function SearchResults() {
       </FilterSection>
 
       <FilterSection title="Brand">
-        {filterBrands.map((brand) => {
-          const name = typeof brand === "string" ? brand : brand.name;
+        {filterBrands.map((brandOption) => {
+          const name =
+            typeof brandOption === "string" ? brandOption : brandOption.name;
+          const value =
+            typeof brandOption === "string"
+              ? brandOption
+              : brandOption.slug || brandOption.name;
           return (
             <label
-              key={name}
+              key={value}
               className="flex items-center gap-2 mb-2 cursor-pointer group"
             >
-              <input type="checkbox" className="w-4 h-4 accent-[#FF5A1F]" />
+              <input
+                type="checkbox"
+                checked={
+                  normalizeFilterValue(selectedBrand) ===
+                  normalizeFilterValue(value)
+                }
+                onChange={(e) =>
+                  updateFilter("brand", e.target.checked ? value : "")
+                }
+                className="w-4 h-4 accent-[#FF5A1F]"
+              />
               <span className="text-sm text-gray-700 group-hover:text-[#FF5A1F] transition-colors flex-1">
                 {name}
               </span>
@@ -476,9 +521,9 @@ export default function SearchResults() {
                   We couldn't find any products matching your search.
                 </p>
                 <div className="space-y-2 text-sm text-gray-500 mb-6">
-                  <p>🔍 Check the spelling of your search keyword</p>
-                  <p>🏷️ Try more general keywords</p>
-                  <p>📦 Browse categories or popular products</p>
+                  <p>Check the spelling of your search keyword</p>
+                  <p>Try more general keywords</p>
+                  <p>Browse categories or popular products</p>
                 </div>
                 <a href="/search" className="btn-primary inline-flex">
                   Continue Shopping →

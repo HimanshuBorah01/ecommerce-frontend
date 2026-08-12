@@ -358,25 +358,7 @@ export default function ProductDetail() {
               <Share2 size={18} className="text-gray-500" />
             </button>
           </div>
-          {/* Mobile: secondary action row (wishlist + share) */}
-          <div className="flex gap-2 mb-6 md:hidden">
-            <button
-              onClick={handleWishlist}
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 rounded-lg hover:border-[#EC4899] hover:text-[#EC4899] transition-colors"
-            >
-              <Heart
-                size={18}
-                className={
-                  wishlisted ? "fill-[#EC4899] text-[#EC4899]" : "text-gray-500"
-                }
-              />
-              {wishlisted ? "Wishlisted" : "Wishlist"}
-            </button>
-            <button className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-gray-200 rounded-lg hover:border-[#FF5A1F] hover:text-[#FF5A1F] transition-colors">
-              <Share2 size={18} className="text-gray-500" /> Share
-            </button>
-          </div>
-
+          
           {/* Trust */}
           <div className="grid grid-cols-3 gap-3 pt-4 border-t border-gray-100">
             {[
