@@ -80,15 +80,15 @@ export default function Footer() {
               Your one-stop destination for all your shopping needs. Quality products, best prices, and seamless delivery.
             </p>
             <div className="space-y-2">
-              <a href="mailto:support@shopy.com" className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#FF5A1F] transition-colors">
-                <Mail size={14} className="text-[#FF5A1F]" /> support@shopy.com
+              <a href="mailto:himanshuborah9954@gmail.com" className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#FF5A1F] transition-colors">
+                <Mail size={14} className="text-[#FF5A1F]" /> himanshuborah9954@gmail.com
               </a>
-              <a href="tel:+918001234567" className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#FF5A1F] transition-colors">
-                <Phone size={14} className="text-[#FF5A1F]" /> 1800-123-4567
+              <a href="tel:+916003185021" className="flex items-center gap-2 text-sm text-gray-500 hover:text-[#FF5A1F] transition-colors">
+                <Phone size={14} className="text-[#FF5A1F]" /> +91 6003185021
               </a>
               <div className="flex items-start gap-2 text-sm text-gray-500">
                 <MapPin size={14} className="text-[#FF5A1F] mt-0.5 flex-shrink-0" />
-                <span>Shopy E-commerce Pvt. Ltd., 123 Tech Park, Electronic City, Bengaluru - 560100</span>
+                <span>Shopy E-commerce Pvt. Ltd., 123 Tech Park, ABCD City, Bengaluru - 123400</span>
               </div>
             </div>
           </div>
