@@ -141,12 +141,12 @@ export default function HelpCenter() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
           <a
-            href="mailto:support@shopy.com"
+            href="mailto:himanshuborah9954@gmail.com"
             className="flex flex-col items-center gap-2 p-4 border border-gray-200 rounded-lg hover:border-[#FF5A1F] hover:bg-orange-50 transition-all"
           >
             <Mail size={24} className="text-[#FF5A1F]" />
             <p className="text-sm font-medium text-[#111827]">Email</p>
-            <p className="text-xs text-gray-500">support@shopy.com</p>
+            <p className="text-xs text-gray-500">himanshuborah9954@gmail.com</p>
           </a>
           <a
             href="tel:+918001234567"
@@ -154,7 +154,7 @@ export default function HelpCenter() {
           >
             <Phone size={24} className="text-[#FF5A1F]" />
             <p className="text-sm font-medium text-[#111827]">Call Us</p>
-            <p className="text-xs text-gray-500">1800-123-4567</p>
+            <p className="text-xs text-gray-500">+916003185021</p>
           </a>
           <div className="flex flex-col items-center gap-2 p-4 border border-gray-200 rounded-lg hover:border-[#FF5A1F] hover:bg-orange-50 transition-all cursor-pointer">
             <MessageCircle size={24} className="text-[#FF5A1F]" />

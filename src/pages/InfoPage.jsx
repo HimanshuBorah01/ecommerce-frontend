@@ -74,7 +74,7 @@ const POLICY_PAGES = {
       },
       {
         heading: "Contact Us",
-        body: "If you have questions about this Privacy Policy, please contact us at support@shopy.com or call 1800-123-4567. Our privacy team will respond within 48 hours.",
+        body: "If you have questions about this Privacy Policy, please contact us at himanshuborah9954@gmail.com or call +916003185021. Our privacy team will respond within 48 hours.",
       },
     ],
     trustBanner: [
@@ -133,7 +133,7 @@ const POLICY_PAGES = {
       },
       {
         heading: "Contact Us",
-        body: "For return-related queries, email us at returns@shopy.com or call 1800-123-4567. Our returns team is available 24x7 to assist you.",
+        body: "For return-related queries, email us at returns@shopy.com or call +916003185021. Our returns team is available 24x7 to assist you.",
       },
     ],
     trustBanner: [
@@ -208,7 +208,7 @@ const POLICY_PAGES = {
       },
       {
         heading: "Contact Us",
-        body: "If you have questions about these Terms, please contact us at support@shopy.com or call 1800-123-4567. Our legal team will respond within 48 hours.",
+        body: "If you have questions about these Terms, please contact us at himanshuborah9954@gmail.com or call +916003185021. Our legal team will respond within 48 hours.",
       },
     ],
     trustBanner: [
@@ -223,7 +223,7 @@ const POLICY_PAGES = {
         title: "We're Here to Help",
         desc: "24x7 customer support",
       },
-      { icon: Mail, title: "Contact Us", desc: "support@shopy.com" },
+      { icon: Mail, title: "Contact Us", desc: "himanshuborah9954@gmail.com" },
     ],
   },
   shipping: {
@@ -263,7 +263,7 @@ const POLICY_PAGES = {
       },
       {
         heading: "Contact Us",
-        body: "For shipping-related queries, email us at shipping@shopy.com or call 1800-123-4567. Our logistics team is available 24x7 to assist you.",
+        body: "For shipping-related queries, email us at shipping@shopy.com or call +916003185021. Our logistics team is available 24x7 to assist you.",
       },
     ],
     trustBanner: [
@@ -314,7 +314,7 @@ const POLICY_PAGES = {
       },
       {
         heading: "Contact Us",
-        body: "If you have questions about our Cookie Policy, please contact us at support@shopy.com or call 1800-123-4567. Our team will respond within 48 hours.",
+        body: "If you have questions about our Cookie Policy, please contact us at himanshuborah9954@gmail.com or call +916003185021. Our team will respond within 48 hours.",
       },
     ],
     trustBanner: [
@@ -365,7 +365,7 @@ const POLICY_PAGES = {
       },
       {
         heading: "Contact Us",
-        body: "For seller-related queries, email us at sellers@shopy.com or call 1800-123-4567. Our seller support team will respond within 24 hours.",
+        body: "For seller-related queries, email us at sellers@shopy.com or call +916003185021. Our seller support team will respond within 24 hours.",
       },
     ],
     trustBanner: [
@@ -494,13 +494,13 @@ export default function InfoPage() {
               <h3 className="font-bold text-[#111827] mb-3">Get in Touch</h3>
               <div className="space-y-3">
                 <a
-                  href="mailto:support@shopy.com"
+                  href="mailto:himanshuborah9954@gmail.com"
                   className="flex items-center gap-3 text-sm text-gray-600 hover:text-[#FF5A1F] transition-colors"
                 >
                   <div className="w-9 h-9 bg-orange-50 rounded-full flex items-center justify-center">
                     <Mail size={16} className="text-[#FF5A1F]" />
                   </div>
-                  support@shopy.com
+                  himanshuborah9954@gmail.com
                 </a>
                 <a
                   href="tel:+918001234567"
@@ -509,7 +509,7 @@ export default function InfoPage() {
                   <div className="w-9 h-9 bg-orange-50 rounded-full flex items-center justify-center">
                     <Phone size={16} className="text-[#FF5A1F]" />
                   </div>
-                  1800-123-4567
+                  +916003185021
                 </a>
                 <div className="flex items-start gap-3 text-sm text-gray-600">
                   <div className="w-9 h-9 bg-orange-50 rounded-full flex items-center justify-center flex-shrink-0">

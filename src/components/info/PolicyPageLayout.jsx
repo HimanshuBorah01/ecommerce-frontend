@@ -244,10 +244,13 @@ export default function PolicyPageLayout({
             <p className="text-sm text-gray-600">
               Questions? Email us at{" "}
               <span className="text-[#FF5A1F] font-medium">
-                support@shopy.com
+                himanshuborah9954@gmail.com
               </span>
             </p>
-            <a href="mailto:support@shopy.com" className="btn-primary text-sm">
+            <a
+              href="mailto:himanshuborah9954@gmail.com"
+              className="btn-primary text-sm"
+            >
               Contact Us →
             </a>
           </div>
