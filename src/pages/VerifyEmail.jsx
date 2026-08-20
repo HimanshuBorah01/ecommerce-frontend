@@ -1,92 +1,45 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import auth from "@/api/authClient";
 import AuthSplitLayout from "@/components/auth/AuthSplitLayout";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 
 export default function VerifyEmail() {
-  const [searchParams] = useSearchParams();
+  const [otp, setOtp] = useState("");
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("");
-  const token = searchParams.get("token") || "";
-  const attempted = useRef(false);
   const navigate = useNavigate();
-  const debugMode = searchParams.get("debug") === "1";
-  const [debugInfo, setDebugInfo] = useState(null);
 
-  useEffect(() => {
-    if (!token) {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage("");
+
+    if (!otp || otp.length !== 6 || !/^\d{6}$/.test(otp)) {
       setStatus("error");
-      setMessage("Verification token is missing.");
+      setMessage("Please enter a valid 6-digit OTP.");
       return;
     }
 
-    // If we've attempted verification for this token recently, avoid calling the API again
-    // to prevent hitting rate limits on the backend. Uses sessionStorage so attempts
-    // are scoped to the browser session and cleared when the tab/window closes.
+    setStatus("loading");
+
     try {
-      const last = window.sessionStorage.getItem(`verify_attempt_${token}`);
-      const FIVE_MIN = 5 * 60 * 1000;
-      if (last && Date.now() - Number(last) < FIVE_MIN) {
-        setStatus("error");
-        setMessage("Too many requests. Please try again later.");
-        return;
-      }
-    } catch (e) {
-      // sessionStorage may be unavailable in some environments; ignore and continue.
+      await auth.verifyEmail({ otp });
+      setStatus("success");
+      setMessage("Your email has been verified successfully. You can now log in.");
+    } catch (error) {
+      setStatus("error");
+      setMessage(error.message || "Email verification failed.");
     }
+  };
 
-    // Ensure we only attempt verification once per mount.
-    if (attempted.current) return;
-    attempted.current = true;
-
-    let isMounted = true;
-
-    const verify = async () => {
-      setStatus("loading");
-      // mark this token as attempted in sessionStorage immediately
-      try {
-        window.sessionStorage.setItem(
-          `verify_attempt_${token}`,
-          String(Date.now()),
-        );
-      } catch (e) {
-        /* ignore */
-      }
-      try {
-        await auth.verifyEmail({ token });
-        if (!isMounted) return;
-        setStatus("success");
-        setMessage(
-          "Your email has been verified successfully. You can now log in.",
-        );
-        try {
-          window.sessionStorage.setItem(`verify_success_${token}`, "1");
-        } catch (e) {
-          /* ignore */
-        }
-        if (debugMode) setDebugInfo({ ok: true, note: "verified" });
-      } catch (error) {
-        if (!isMounted) return;
-        setStatus("error");
-        setMessage(error.message || "Email verification failed.");
-        if (debugMode) setDebugInfo({ status: error.status, data: error.data });
-      }
-    };
-
-    verify();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [token]);
-
-  // Auto-redirect to login after successful verification.
   useEffect(() => {
-    if (status !== "success") return;
-    const t = setTimeout(() => navigate("/login", { replace: true }), 2000);
-    return () => clearTimeout(t);
+    if (status === "success") {
+      const t = setTimeout(() => navigate("/login", { replace: true }), 2000);
+      return () => clearTimeout(t);
+    }
   }, [status, navigate]);
 
   return (
@@ -95,32 +48,62 @@ export default function VerifyEmail() {
       subtitle={
         status === "success"
           ? "Your account is ready."
-          : "Verifying your email address..."
+          : "Enter the 6-digit code sent to your email."
       }
       sideTitle="Almost there!"
       sideSubtitle="We are confirming your email so you can start shopping."
     >
       {message && (
-        <div className="mb-4 p-3 rounded-lg bg-white text-sm text-gray-700 border border-gray-200">
+        <div
+          className={`mb-4 p-3 rounded-lg text-sm border ${
+            status === "success"
+              ? "bg-green-50 text-green-700 border-green-200"
+              : "bg-red-50 text-red-600 border-red-100"
+          }`}
+        >
           {message}
         </div>
       )}
-      <div className="flex flex-col gap-3">
-        {status === "loading" ? (
-          <Button
-            className="w-full h-12 font-semibold bg-[#FF5A1F] rounded-xl"
-            disabled
-          >
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Verifying...
-          </Button>
-        ) : (
-          <Link to="/login">
-            <Button className="w-full h-12 font-semibold bg-[#FF5A1F] rounded-xl">
-              Go to Login
-            </Button>
-          </Link>
-        )}
-      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label className="text-sm font-medium text-[#111827]">
+            Verification Code
+          </Label>
+          <Input
+            type="text"
+            inputMode="numeric"
+            maxLength={6}
+            value={otp}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+            placeholder="Enter 6-digit code"
+            className="h-12 border-gray-200 rounded-xl focus:border-[#FF5A1F] focus:ring-[#FF5A1F]/20 text-center text-2xl tracking-widest"
+            disabled={status === "loading"}
+            autoFocus
+          />
+        </div>
+
+        <Button
+          type="submit"
+          className="w-full h-12 font-semibold bg-[#FF5A1F] rounded-xl"
+          disabled={status === "loading"}
+        >
+          {status === "loading" ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Verifying...
+            </>
+          ) : (
+            "Verify Email"
+          )}
+        </Button>
+      </form>
+
+      <p className="text-center text-sm text-gray-500 mt-4">
+        Didn&apos;t receive the code?{" "}
+        <Link to="/register" className="text-[#FF5A1F] font-medium hover:underline">
+          Resend
+        </Link>
+      </p>
     </AuthSplitLayout>
   );
 }

@@ -21,6 +21,8 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [agree, setAgree] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [verifyLoading, setVerifyLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,10 +58,34 @@ export default function Register() {
       await auth.resendVerificationEmail(email);
       toast({
         title: "Email sent",
-        description: "Check your inbox for the verification link.",
+        description: "Check your inbox for the verification code.",
       });
     } catch (err) {
       setError(err.message || "Failed to resend verification email");
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setError("");
+    if (!otp || otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+      setError("Please enter a valid 6-digit OTP.");
+      return;
+    }
+    setVerifyLoading(true);
+    try {
+      await auth.verifyEmail({ otp });
+      toast({
+        title: "Email verified",
+        description: "Your account is now active. You can log in.",
+      });
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1500);
+    } catch (err) {
+      setError(err.message || "Verification failed");
+    } finally {
+      setVerifyLoading(false);
     }
   };
 
@@ -67,9 +93,9 @@ export default function Register() {
     return (
       <AuthSplitLayout
         title="Verify your email"
-        subtitle={`We sent a verification link to ${email}`}
+        subtitle={`We sent a verification code to ${email}`}
         sideTitle="Almost there!"
-        sideSubtitle="Check your inbox and click the link to verify your account."
+        sideSubtitle="Check your inbox and enter the code to verify your account."
       >
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm border border-red-100">
@@ -78,16 +104,52 @@ export default function Register() {
         )}
         <div className="mb-6 text-sm text-gray-600">
           <p>
-            A verification link has been sent to <strong>{email}</strong>.
+            A verification code has been sent to <strong>{email}</strong>.
           </p>
           <p>
-            Please open your email and click the link to complete registration.
+            Please enter the 6-digit code below to complete registration.
           </p>
         </div>
+
+        <form onSubmit={handleVerifyOtp} className="space-y-4 mb-4">
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-[#111827]">
+              Verification Code
+            </Label>
+            <Input
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+              placeholder="Enter 6-digit code"
+              className="h-12 border-gray-200 rounded-xl focus:border-[#FF5A1F] focus:ring-[#FF5A1F]/20 text-center text-2xl tracking-widest"
+              disabled={verifyLoading}
+              autoFocus
+            />
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full h-12 font-semibold bg-[#FF5A1F] hover:bg-[#E64A19] rounded-xl"
+            disabled={verifyLoading}
+          >
+            {verifyLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Verifying...
+              </>
+            ) : (
+              "Verify Email"
+            )}
+          </Button>
+        </form>
+
         <Button
           className="w-full h-12 font-semibold bg-[#FF5A1F] hover:bg-[#E64A19] rounded-xl"
           onClick={handleResend}
-          disabled={loading}
+          disabled={loading || verifyLoading}
+          variant="outline"
         >
           {loading ? (
             <>
@@ -95,7 +157,7 @@ export default function Register() {
               Resending...
             </>
           ) : (
-            "Resend verification email"
+            "Resend verification code"
           )}
         </Button>
         <p className="text-center text-sm text-gray-500 mt-4">

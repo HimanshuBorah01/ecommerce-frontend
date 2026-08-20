@@ -155,7 +155,7 @@ export const auth = {
     return body;
   },
 
-  // Verify email using the token from the verification link.
+  // Verify email using the 6-digit OTP.
   verifyEmail: async (payload) => {
     const res = await fetch(`${AUTH_BASE}/auth/verify-email`, {
       method: "POST",
@@ -183,7 +183,7 @@ export const auth = {
     return body;
   },
 
-  // Resend the email verification link.
+  // Resend the email verification OTP.
   resendVerificationEmail: async (email) => {
     const res = await fetch(`${AUTH_BASE}/auth/resend-verification-email`, {
       method: "POST",
