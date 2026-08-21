@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import auth from "@/api/authClient";
 import { useAuth } from "@/lib/AuthContext";
@@ -20,7 +20,7 @@ export default function Login() {
   const debugMode =
     new URLSearchParams(window.location.search).get("debug") === "1";
   const [debugInfo, setDebugInfo] = useState(null);
-  const mountCount = React.useRef(0);
+  const mountCount = useRef(0);
   mountCount.current += 1;
 
   const { checkUserAuth } = useAuth();
@@ -32,8 +32,6 @@ export default function Login() {
     try {
       await auth.loginViaEmailPassword(email, password);
       await checkUserAuth();
-      // Prevent redirect loops: if `returnTo` points back to the login page
-      // (or equals the current location), default to home.
       try {
         const current = window.location.pathname + window.location.search;
         const target =
@@ -46,13 +44,19 @@ export default function Login() {
         navigate("/", { replace: true });
       }
     } catch (err) {
-      setError(err.message || "Invalid email or password");
+      const message = err.message || "Invalid email or password";
+
+      if (message.toLowerCase().includes("verify your email")) {
+        navigate("/verify-email", { state: { email } });
+        return;
+      }
+
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Gather debug snapshot for the UI when debug mode is enabled.
   const debugSnapshot = (() => {
     if (!debugMode) return null;
     const token =
@@ -81,7 +85,7 @@ export default function Login() {
       sideSubtitle="Login to continue shopping and get the best deals on your favorite products."
       footer={
         <>
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link
             to={
               "/register" +
