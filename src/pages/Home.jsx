@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import HeroBanner from "@/components/home/HeroBanner";
-import TrustStrip from "@/components/home/TrustStrip";
 import PromoStrip from "@/components/home/PromoStrip";
 import ProductSection from "@/components/home/ProductSection";
 import BrandsBanner from "@/components/home/BrandsBanner";
@@ -19,7 +18,6 @@ export default function Home() {
   return (
     <div>
       <HeroBanner />
-      <TrustStrip />
 
       <div className="max-w-[1400px] mx-auto px-4 overflow-visible">
         {/* Top Picks — orange/amber gradient */}
