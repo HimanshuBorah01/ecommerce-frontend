@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
@@ -13,11 +14,57 @@ import {
   ClipboardList,
   Box,
   Send,
+  XCircle,
+  RotateCcw,
 } from "lucide-react";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
+
+const CANCELLABLE_STATUSES = [
+  "pending",
+  "confirmed",
+  "processing",
+  "packed",
+];
+
+function isReturnEligible(order) {
+  if (order.status !== "delivered") return false;
+  const deliveryDate = order.deliveredAt || order.updatedAt;
+  if (!deliveryDate) return false;
+  const daysSinceDelivery = Math.floor(
+    (Date.now() - new Date(deliveryDate).getTime()) /
+      (1000 * 60 * 60 * 24),
+  );
+  return daysSinceDelivery <= 7;
+}
+
+function getDaysSinceDelivery(order) {
+  const deliveryDate = order.deliveredAt || order.updatedAt;
+  if (!deliveryDate) return null;
+  return Math.floor(
+    (Date.now() - new Date(deliveryDate).getTime()) /
+      (1000 * 60 * 60 * 24),
+  );
+}
 
 export default function Orders() {
   const [filter, setFilter] = useState("all");
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  // Track which order has its dialog open
+  const [activeOrderId, setActiveOrderId] = useState(null);
+  const [dialogType, setDialogType] = useState(null); // "cancel" | "return"
+  const [returnReason, setReturnReason] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["orders", filter],
@@ -30,7 +77,6 @@ export default function Orders() {
   const filtered =
     filter === "all" ? orders : orders.filter((o) => o.status === filter);
 
-  // Full lifecycle used by the backend order model.
   const statusSteps = [
     "pending",
     "confirmed",
@@ -64,6 +110,67 @@ export default function Orders() {
     "returned",
     "refunded",
   ];
+
+  const cancelMutation = useMutation({
+    mutationFn: (orderId) => api.put(`/orders/${orderId}/cancel`),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["orders"]);
+      setActiveOrderId(null);
+      toast({
+        title: "Order cancelled",
+        description: "Your order has been cancelled successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Cancellation failed",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const returnMutation = useMutation({
+    mutationFn: (orderId) =>
+      api.put(`/orders/${orderId}/return`, { reason: returnReason }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["orders"]);
+      setActiveOrderId(null);
+      setReturnReason("");
+      toast({
+        title: "Return requested",
+        description: "Your return request has been submitted.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Return failed",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const openDialog = (orderId, type) => {
+    setActiveOrderId(orderId);
+    setDialogType(type);
+    setReturnReason("");
+  };
+
+  const activeOrder = activeOrderId
+    ? orders.find((o) => (o._id || o.id) === activeOrderId)
+    : null;
+
+  const handleDialogAction = () => {
+    if (dialogType === "cancel") {
+      cancelMutation.mutate(activeOrderId);
+    } else if (dialogType === "return") {
+      returnMutation.mutate(activeOrderId);
+    }
+  };
+
+  const isReturnDialog = dialogType === "return";
+  const isActionPending = cancelMutation.isPending || returnMutation.isPending;
 
   return (
     <div>
@@ -114,11 +221,14 @@ export default function Orders() {
             const status = order.status || "pending";
             const statusInfo = ORDER_STATUSES[status] || ORDER_STATUSES.pending;
             const currentStep = statusSteps.indexOf(status);
+            const canCancel = CANCELLABLE_STATUSES.includes(status);
+            const canReturn = isReturnEligible(order);
+            const daysRemaining = canReturn ? 7 - getDaysSinceDelivery(order) : 0;
+
             return (
-              <Link
+              <div
                 key={order._id || order.id}
-                to={`/account/orders/${order._id || order.id}`}
-                className="block bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-[#FF5A1F] hover:shadow-md transition-all group"
+                className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-[#FF5A1F] hover:shadow-md transition-all group"
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3 md:p-4 border-b border-gray-100 bg-gray-50">
                   <div className="flex flex-wrap items-center gap-3 md:gap-4">
@@ -153,15 +263,58 @@ export default function Orders() {
                       </p>
                     </div>
                   </div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${statusInfo.color}`}
-                  >
-                    {statusInfo.label}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${statusInfo.color}`}
+                    >
+                      {statusInfo.label}
+                    </span>
+                    {(canCancel || canReturn) && (
+                      <div className="flex items-center gap-1">
+                        {canCancel && (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="h-8 text-xs"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              openDialog(
+                                order._id || order.id,
+                                "cancel",
+                              );
+                            }}
+                          >
+                            <XCircle size={12} className="mr-1" />
+                            Cancel
+                          </Button>
+                        )}
+                        {canReturn && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 text-xs"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              openDialog(
+                                order._id || order.id,
+                                "return",
+                              );
+                            }}
+                          >
+                            <RotateCcw size={12} className="mr-1" />
+                            Return
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Items */}
-                <div className="p-3 md:p-4">
+                <Link
+                  to={`/account/orders/${order._id || order.id}`}
+                  className="block p-3 md:p-4"
+                >
                   <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
                     {(order.items || []).map((item, i) => {
                       const product = item.product || item.productId || {};
@@ -253,12 +406,80 @@ export default function Orders() {
                       View Details <ChevronRight size={14} />
                     </span>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
             );
           })}
         </div>
       )}
+
+      {/* Action Dialog (Cancel / Return) */}
+      <Dialog
+        open={!!activeOrderId}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActiveOrderId(null);
+            setDialogType(null);
+            setReturnReason("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {dialogType === "cancel" ? "Cancel Order" : "Return Order"}
+            </DialogTitle>
+            <DialogDescription>
+              {dialogType === "cancel"
+                ? "Are you sure you want to cancel this order? This action cannot be undone. Any stock reserved for this order will be released."
+                : "Please provide a reason for returning this order. Our team will review your request and arrange for pickup."}
+            </DialogDescription>
+          </DialogHeader>
+          {isReturnDialog && (
+            <div className="py-4">
+              <Textarea
+                placeholder="Describe the reason for return..."
+                value={returnReason}
+                onChange={(e) => setReturnReason(e.target.value)}
+                rows={4}
+                className="resize-none"
+              />
+              {returnMutation.isError && (
+                <p className="text-sm text-red-500 mt-2">
+                  {returnMutation.error?.message || ""}
+                </p>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setActiveOrderId(null);
+                setDialogType(null);
+                setReturnReason("");
+              }}
+              disabled={isActionPending}
+            >
+              {dialogType === "cancel" ? "Keep Order" : "Go Back"}
+            </Button>
+            <Button
+              variant={dialogType === "cancel" ? "destructive" : "default"}
+              onClick={handleDialogAction}
+              disabled={
+                isActionPending ||
+                (isReturnDialog && returnReason.trim().length < 3)
+              }
+            >
+              {isActionPending
+                ? "Please wait..."
+                : dialogType === "cancel"
+                  ? "Yes, Cancel"
+                  : "Submit Return"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

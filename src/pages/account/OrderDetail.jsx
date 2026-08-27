@@ -1,17 +1,112 @@
 import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { api } from "@/lib/api";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { ORDER_STATUSES } from "@/constants";
-import { Package, MapPin, CreditCard, ArrowLeft, Download } from "lucide-react";
+import {
+  Package,
+  MapPin,
+  CreditCard,
+  ArrowLeft,
+  Download,
+  XCircle,
+  RotateCcw,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
+
+const CANCELLABLE_STATUSES = [
+  "pending",
+  "confirmed",
+  "processing",
+  "packed",
+];
+
+function isReturnEligible(order) {
+  if (order.status !== "delivered") return false;
+  const deliveryDate = order.deliveredAt || order.updatedAt;
+  if (!deliveryDate) return false;
+  const daysSinceDelivery = Math.floor(
+    (Date.now() - new Date(deliveryDate).getTime()) /
+      (1000 * 60 * 60 * 24),
+  );
+  return daysSinceDelivery <= 7;
+}
+
+function getDaysSinceDelivery(order) {
+  const deliveryDate = order.deliveredAt || order.updatedAt;
+  if (!deliveryDate) return null;
+  return Math.floor(
+    (Date.now() - new Date(deliveryDate).getTime()) /
+      (1000 * 60 * 60 * 24),
+  );
+}
 
 export default function OrderDetail() {
   const { id } = useParams();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showReturnDialog, setShowReturnDialog] = useState(false);
+  const [returnReason, setReturnReason] = useState("");
 
   const { data, isLoading } = useQuery({
     queryKey: ["order", id],
     queryFn: () => api.get(`/orders/${id}`),
     enabled: !!id,
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: () => api.put(`/orders/${id}/cancel`),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["orders"]);
+      queryClient.invalidateQueries(["order", id]);
+      setShowCancelDialog(false);
+      toast({
+        title: "Order cancelled",
+        description: "Your order has been cancelled successfully. Stock has been restored.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Cancellation failed",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const returnMutation = useMutation({
+    mutationFn: () =>
+      api.put(`/orders/${id}/return`, { reason: returnReason }),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["orders"]);
+      queryClient.invalidateQueries(["order", id]);
+      setShowReturnDialog(false);
+      setReturnReason("");
+      toast({
+        title: "Return requested",
+        description:
+          "Your return request has been submitted. Your items will be picked up soon.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Return failed",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+      });
+    },
   });
 
   if (isLoading) {
@@ -41,12 +136,14 @@ export default function OrderDetail() {
   const status = order.status || "pending";
   const statusInfo = ORDER_STATUSES[status] || ORDER_STATUSES.pending;
   const items = order.items || [];
+  const canCancel = CANCELLABLE_STATUSES.includes(status);
+  const canReturn = isReturnEligible(order);
+  const daysRemaining = canReturn ? 7 - getDaysSinceDelivery(order) : 0;
   const subtotal =
     order.subtotal ||
     items.reduce((s, i) => s + (i.price || 0) * (i.quantity || 1), 0);
   const shipping = order.shipping || 0;
   const tax = order.tax || 0;
-  // Backend order model stores the total as `totalAmount`.
   const total =
     order.totalAmount ||
     order.total ||
@@ -179,6 +276,16 @@ export default function OrderDetail() {
               <p className="text-sm text-gray-400">No address on file</p>
             )}
           </div>
+
+          {/* Return Reason (if returned) */}
+          {status === "returned" && order.returnReason && (
+            <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-5">
+              <h2 className="font-bold text-base md:text-lg text-[#111827] mb-2 flex items-center gap-2">
+                <RotateCcw size={18} className="text-gray-500" /> Return Reason
+              </h2>
+              <p className="text-sm text-gray-600">{order.returnReason}</p>
+            </div>
+          )}
         </div>
 
         {/* Summary */}
@@ -232,12 +339,119 @@ export default function OrderDetail() {
                 </span>
               </div>
             </div>
+
+            {/* Action Buttons */}
+            {(canCancel || canReturn) && (
+              <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                {canCancel && (
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={() => setShowCancelDialog(true)}
+                  >
+                    <XCircle size={16} className="mr-2" />
+                    Cancel Order
+                  </Button>
+                )}
+                {canReturn && (
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setShowReturnDialog(true)}
+                  >
+                    <RotateCcw size={16} className="mr-2" />
+                    Return Order
+                    {daysRemaining > 0 && (
+                      <span className="ml-2 text-xs opacity-80">
+                        ({daysRemaining} day{daysRemaining !== 1 ? "s" : ""}{" "}
+                        left)
+                      </span>
+                    )}
+                  </Button>
+                )}
+              </div>
+            )}
+
             <button className="btn-outline w-full mt-4">
               <Download size={16} /> Download Invoice
             </button>
           </div>
         </div>
       </div>
+
+      {/* Cancel Confirmation Dialog */}
+      <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cancel Order</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel this order? This action cannot be
+              undone. Any stock reserved for this order will be released.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowCancelDialog(false)}
+              disabled={cancelMutation.isPending}
+            >
+              Keep Order
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => cancelMutation.mutate()}
+              disabled={cancelMutation.isPending}
+            >
+              {cancelMutation.isPending ? "Cancelling..." : "Yes, Cancel"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Return Dialog */}
+      <Dialog open={showReturnDialog} onOpenChange={setShowReturnDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Return Order</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for returning this order. Our team will
+              review your request and arrange for pickup.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Textarea
+              placeholder="Describe the reason for return..."
+              value={returnReason}
+              onChange={(e) => setReturnReason(e.target.value)}
+              rows={4}
+              className="resize-none"
+            />
+            {returnMutation.isError && (
+              <p className="text-sm text-red-500 mt-2">
+                {returnMutation.error?.message || ""}
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowReturnDialog(false);
+                setReturnReason("");
+              }}
+              disabled={returnMutation.isPending}
+            >
+              Go Back
+            </Button>
+            <Button
+              onClick={() => returnMutation.mutate()}
+              disabled={returnMutation.isPending || returnReason.trim().length < 3}
+            >
+              {returnMutation.isPending ? "Submitting..." : "Submit Return"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
