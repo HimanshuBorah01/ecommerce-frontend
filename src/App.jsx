@@ -21,7 +21,6 @@ import OrderDetail from "@/pages/account/OrderDetail";
 import Addresses from "@/pages/account/Addresses";
 import Profile from "@/pages/account/Profile";
 import ChangePassword from "@/pages/account/ChangePassword";
-import ChangeEmail from "@/pages/account/ChangeEmail";
 import NotificationSettings from "@/pages/account/NotificationSettings";
 import InfoPage from "@/pages/InfoPage";
 import HelpCenter from "@/pages/HelpCenter";
@@ -94,7 +93,6 @@ const AuthenticatedApp = () => {
           <Route path="wishlist" element={<Wishlist />} />
           <Route path="profile" element={<Profile />} />
           <Route path="password" element={<ChangePassword />} />
-          <Route path="email" element={<ChangeEmail />} />
           <Route path="notifications" element={<NotificationSettings />} />
         </Route>
       </Route>

@@ -1,13 +1,8 @@
 import { Breadcrumb } from "@/components/ui/breadcrumb";
-import { Bell, Mail, Settings as SettingsIcon } from "lucide-react";
+import { Bell, Settings as SettingsIcon } from "lucide-react";
 
 export default function AccountSettings({ type = "settings" }) {
   const config = {
-    email: {
-      icon: Mail,
-      title: "Change Email",
-      desc: "Update your email address",
-    },
     notifications: {
       icon: Bell,
       title: "Notification Settings",

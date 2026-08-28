@@ -777,7 +777,6 @@ export default function InfoPage() {
                 ["My Wishlist", "/account/wishlist"],
                 ["My Profile", "/account/profile"],
                 ["Change Password", "/account/password"],
-                ["Change Email", "/account/email"],
                 ["Notification Settings", "/account/notifications"],
               ],
             },
