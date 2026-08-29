@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
-import { Mail, MessageSquare } from "lucide-react";
+import { Mail } from "lucide-react";
 
 export default function NotificationSettings() {
   const [settings, setSettings] = useState({
@@ -9,8 +9,6 @@ export default function NotificationSettings() {
     newsletter: true,
     priceDrops: false,
     newArrivals: true,
-    smsAlerts: false,
-    whatsappUpdates: true,
   });
 
   const toggle = (key) => setSettings({ ...settings, [key]: !settings[key] });
@@ -52,22 +50,6 @@ export default function NotificationSettings() {
           key: "newArrivals",
           label: "New Arrivals",
           desc: "Be the first to know about new products",
-        },
-      ],
-    },
-    {
-      title: "SMS & WhatsApp",
-      icon: MessageSquare,
-      items: [
-        {
-          key: "smsAlerts",
-          label: "SMS Alerts",
-          desc: "Order updates via SMS",
-        },
-        {
-          key: "whatsappUpdates",
-          label: "WhatsApp Updates",
-          desc: "Order & delivery updates on WhatsApp",
         },
       ],
     },
