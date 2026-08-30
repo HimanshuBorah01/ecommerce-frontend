@@ -94,7 +94,7 @@ export default function HelpCenter() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8 items-start">
         {CATEGORIES.map((cat, i) => (
           <div
             key={i}
