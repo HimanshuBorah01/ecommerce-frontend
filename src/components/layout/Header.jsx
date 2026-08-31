@@ -8,7 +8,6 @@ import {
   LogOut,
   Package,
   MapPin,
-  Settings,
   LayoutDashboard,
   Menu,
   X,
@@ -60,7 +59,6 @@ export default function Header() {
     { to: "/account/wishlist", icon: Heart, label: "My Wishlist" },
     { to: "/account/addresses", icon: MapPin, label: "My Addresses" },
     { to: "/account/profile", icon: User, label: "My Profile" },
-    { to: "/account/settings", icon: Settings, label: "Account Settings" },
   ];
 
   // Derive a friendly display name from available user fields.
