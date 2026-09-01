@@ -354,7 +354,7 @@ export default function Orders() {
                             return (
                               <div
                                 key={s}
-                                className="relative flex-1 last:flex-none"
+                                className="relative flex-1 last:flex-none md:min-w-[100px]"
                               >
                                 {/* Connector line between icons */}
                                 {i < statusSteps.length - 1 && (
