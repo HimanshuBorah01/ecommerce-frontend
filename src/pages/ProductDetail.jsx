@@ -18,6 +18,7 @@ import {
   Plus,
   Star,
   Share2,
+  Check,
 } from "lucide-react";
 
 export default function ProductDetail() {
@@ -30,6 +31,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
   const [adding, setAdding] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const { data: productData, isLoading } = useQuery({
     queryKey: ["product", id],
@@ -137,6 +139,35 @@ export default function ProductDetail() {
       return;
     }
     wishlisted ? await removeFromWishlist(id) : await addToWishlist(id);
+  };
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/product/${id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product?.name || product?.title,
+          text: product?.name || product?.title,
+          url,
+        });
+      } catch (e) {
+        if (e.name !== "AbortError") {
+          await copyToClipboard(url);
+        }
+      }
+    } else {
+      await copyToClipboard(url);
+    }
+  };
+
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (e) {
+      // clipboard API not available
+    }
   };
 
   const related =
@@ -354,8 +385,15 @@ export default function ProductDetail() {
                 }
               />
             </button>
-            <button className="w-11 h-11 md:w-12 md:h-12 flex items-center justify-center border border-gray-200 rounded-lg hover:border-[#FF5A1F] hover:text-[#FF5A1F] transition-colors flex-shrink-0">
-              <Share2 size={18} className="text-gray-500" />
+            <button
+              onClick={handleShare}
+              className="w-11 h-11 md:w-12 md:h-12 flex items-center justify-center border border-gray-200 rounded-lg hover:border-[#FF5A1F] hover:text-[#FF5A1F] transition-colors flex-shrink-0"
+            >
+              {copied ? (
+                <Check size={18} className="text-green-500" />
+              ) : (
+                <Share2 size={18} className="text-gray-500" />
+              )}
             </button>
           </div>
           
