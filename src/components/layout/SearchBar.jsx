@@ -17,7 +17,9 @@ export default function SearchBar() {
     staleTime: 30000,
   });
 
-  const suggestionList = suggestions?.suggestions || [];
+  const suggestionList = (suggestions?.suggestions || []).filter(
+    (s) => (typeof s === "object" ? s.type !== "category" : true),
+  );
 
   const handleSearch = (q = query) => {
     if (!q.trim()) return;
@@ -84,8 +86,11 @@ export default function SearchBar() {
             Search Suggestions
           </div>
           {suggestionList.map((s, i) => {
-            // Backend returns suggestions as { _id, name, type }.
             const label = typeof s === "string" ? s : s.name || "";
+            const sub =
+              typeof s === "string"
+                ? ""
+                : s.category?.name || s.category || s.type || "";
             return (
               <button
                 key={i}
@@ -96,7 +101,14 @@ export default function SearchBar() {
                 className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left hover:bg-orange-50 transition-colors"
               >
                 <Search size={14} className="text-gray-400 flex-shrink-0" />
-                <span className="text-[#111827]">{label}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[#111827] truncate">{label}</div>
+                  {sub && (
+                    <div className="text-xs text-gray-500 truncate">
+                      in {sub}
+                    </div>
+                  )}
+                </div>
               </button>
             );
           })}
