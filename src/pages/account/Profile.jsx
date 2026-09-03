@@ -2,14 +2,14 @@ import { useState } from "react";
 import { useAuth } from "@/lib/AuthContext";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { User, Mail, Phone, Save } from "lucide-react";
+import { api } from "@/lib/api";
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [form, setForm] = useState({
-    full_name: user?.full_name || user?.name || "",
+    full_name: user?.name || "",
     email: user?.email || "",
     phone: user?.phone || "",
-    bio: user?.bio || "",
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -19,17 +19,20 @@ export default function Profile() {
     e.preventDefault();
     setSaving(true);
     setSaved(false);
+    setMsg("");
     try {
-      // Profile update endpoint not available in backend
-      // This is a placeholder for future implementation
-      setMsg("Profile update coming soon!");
+      const res = await api.patch("/auth/me", {
+        name: form.full_name,
+        phone: form.phone,
+      });
+      setMsg("✓ Profile updated successfully");
       setSaved(true);
-      setTimeout(() => {
-        setSaved(false);
-        setMsg("");
-      }, 3000);
-    } catch {
-      /* bubble */
+      updateUser({
+        name: res?.user?.name,
+        phone: res?.user?.phone,
+      });
+    } catch (err) {
+      setMsg(err?.message || "Failed to update profile");
     } finally {
       setSaving(false);
     }
@@ -122,7 +125,11 @@ export default function Profile() {
             <div className="md:col-span-2"></div>
           </div>
           {msg && (
-            <p className="text-sm text-blue-600 font-medium mt-2">{msg}</p>
+            <p
+              className={`text-sm mt-2 ${msg.startsWith("✓") ? "text-green-600" : "text-red-500"}`}
+            >
+              {msg}
+            </p>
           )}
           <div className="flex items-center gap-3 mt-6">
             <button
@@ -132,11 +139,6 @@ export default function Profile() {
             >
               <Save size={16} /> {saving ? "Saving..." : "Save Changes"}
             </button>
-            {saved && (
-              <span className="text-sm text-green-600 font-medium">
-                ✓ Profile updated successfully
-              </span>
-            )}
           </div>
         </form>
       </div>
