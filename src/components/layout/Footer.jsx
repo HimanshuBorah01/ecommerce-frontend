@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Facebook, Instagram, Twitter, Youtube, Truck, RefreshCw, Shield, Headphones, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Youtube, Truck, RefreshCw, Shield, Headphones, Mail, Phone, MapPin, Loader2 } from 'lucide-react';
 import Logo from './Logo';
 import NewsletterPopup from '@/components/NewsletterPopup';
+import { api } from '@/lib/api';
+import { toast } from '@/components/ui/use-toast';
 
 const footerLinks = {
   Company: [
@@ -42,13 +44,34 @@ const trustItems = [
 export default function Footer() {
   const [showPopup, setShowPopup] = useState(false);
   const [subEmail, setSubEmail] = useState('');
+  const [subLoading, setSubLoading] = useState(false);
 
-  const handleSubscribe = (e) => {
+  const handleSubscribe = async (e) => {
     e.preventDefault();
     const email = e.target.elements.email?.value || subEmail;
-    setSubEmail(email);
-    setShowPopup(true);
-    e.target.reset();
+    if (!email) {
+      toast({
+        title: 'Email required',
+        description: 'Please enter your email address.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setSubLoading(true);
+    try {
+      await api.post('/newsletter/subscribe', { email });
+      setSubEmail(email);
+      setShowPopup(true);
+      e.target.reset();
+    } catch (err) {
+      toast({
+        title: 'Subscription failed',
+        description: err.message || 'Could not subscribe. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setSubLoading(false);
+    }
   };
 
   return (
@@ -125,8 +148,12 @@ export default function Footer() {
             <form onSubmit={handleSubscribe} className="flex w-full md:flex-1 md:max-w-sm">
               <input name="email" type="email" required placeholder="Enter your email address"
                 className="flex-1 min-w-0 px-4 py-2 border border-gray-200 rounded-l-lg text-sm focus:outline-none focus:border-[#FF5A1F]" />
-              <button type="submit" className="px-4 md:px-5 py-2 bg-[#FF5A1F] text-white text-sm font-medium rounded-r-lg hover:bg-[#E64A19] transition-colors whitespace-nowrap">
-                Subscribe
+              <button type="submit" disabled={subLoading} className="px-4 md:px-5 py-2 bg-[#FF5A1F] text-white text-sm font-medium rounded-r-lg hover:bg-[#E64A19] transition-colors whitespace-nowrap disabled:opacity-60">
+                {subLoading ? (
+                  <span className="flex items-center gap-1">
+                    <Loader2 size={16} className="animate-spin" /> Subscribing...
+                  </span>
+                ) : 'Subscribe'}
               </button>
             </form>
           </div>

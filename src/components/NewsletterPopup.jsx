@@ -23,14 +23,14 @@ export default function NewsletterPopup({ open, onClose, email }) {
           >
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition-colors"
+              className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
             >
               <X size={18} />
             </button>
 
-            {/* Confetti circles */}
-            <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-[#FF5A1F]/10" />
-            <div className="absolute -bottom-12 -left-12 w-40 h-40 rounded-full bg-orange-100/50" />
+            {/* Confetti circles (kept behind the close button/content with z-0) */}
+            <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-[#FF5A1F]/10 z-0" />
+            <div className="absolute -bottom-12 -left-12 w-40 h-40 rounded-full bg-orange-100/50 z-0" />
 
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
