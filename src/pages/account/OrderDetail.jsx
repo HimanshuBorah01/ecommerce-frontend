@@ -4,6 +4,8 @@ import { useState } from "react";
 import { api } from "@/lib/api";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { ORDER_STATUSES } from "@/constants";
+import { useAuth } from "@/lib/AuthContext";
+import { openRazorpayCheckout } from "@/lib/razorpay";
 import {
   Package,
   MapPin,
@@ -12,6 +14,7 @@ import {
   Download,
   XCircle,
   RotateCcw,
+  Loader,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -109,6 +112,57 @@ export default function OrderDetail() {
     },
   });
 
+  const { user } = useAuth();
+
+  const isPendingPayment = (order) => {
+    if (order.paymentMethod !== "razorpay") return false;
+    if (["cancelled", "returned", "refunded"].includes(order.status)) return false;
+    return order.paymentStatus !== "paid" && order.paymentStatus !== "refunded";
+  };
+
+  const payNowMutation = useMutation({
+    mutationFn: async (order) => {
+      const paymentRes = await api.post("/payment/order", {
+        orderId: order._id || order.id,
+      });
+      const razorpayOrderId =
+        paymentRes?.razorpayOrderId || paymentRes?.razorpay_order_id;
+      if (!razorpayOrderId) throw new Error("Could not initialize payment");
+
+      const payment = await openRazorpayCheckout({
+        razorpayOrderId,
+        prefill: {
+          name: order.address?.fullName || user?.name || "",
+          email: user?.email || "",
+          contact: order.address?.phone || user?.phone || "",
+        },
+      });
+
+      await api.post("/payment/verify-payment", {
+        razorpay_order_id: payment.razorpay_order_id,
+        razorpay_payment_id: payment.razorpay_payment_id,
+        razorpay_signature: payment.razorpay_signature,
+      });
+
+      return order;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["orders"]);
+      queryClient.invalidateQueries(["order", id]);
+      toast({
+        title: "Payment successful",
+        description: "Your order has been confirmed.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Payment failed",
+        description: error.message || "Something went wrong",
+        variant: "destructive",
+      });
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -139,6 +193,7 @@ export default function OrderDetail() {
   const canCancel = CANCELLABLE_STATUSES.includes(status);
   const canReturn = isReturnEligible(order);
   const daysRemaining = canReturn ? 7 - getDaysSinceDelivery(order) : 0;
+  const pendingPayment = isPendingPayment(order);
   const subtotal =
     order.subtotal ||
     items.reduce((s, i) => s + (i.price || 0) * (i.quantity || 1), 0);
@@ -341,8 +396,22 @@ export default function OrderDetail() {
             </div>
 
             {/* Action Buttons */}
-            {(canCancel || canReturn) && (
+            {(canCancel || canReturn || pendingPayment) && (
               <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                {pendingPayment && (
+                  <Button
+                    className="w-full"
+                    onClick={() => payNowMutation.mutate(order)}
+                    disabled={payNowMutation.isPending}
+                  >
+                    {payNowMutation.isPending ? (
+                      <Loader size={16} className="mr-2 animate-spin" />
+                    ) : (
+                      <CreditCard size={16} className="mr-2" />
+                    )}
+                    {payNowMutation.isPending ? "Processing Payment..." : "Pay Now"}
+                  </Button>
+                )}
                 {canCancel && (
                   <Button
                     variant="destructive"
