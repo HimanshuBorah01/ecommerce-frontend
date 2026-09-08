@@ -8,14 +8,22 @@
     "noEmit": true,
     "allowJs": true,
     "checkJs": true,
+    "ignoreDeprecations": "6.0",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "src/*"
+      ]
     },
-    "lib": ["DOM", "ES2022"]
+    "lib": [
+      "DOM",
+      "ES2022"
+    ]
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Lock, Eye, EyeOff, Save } from "lucide-react";
 import { api } from "@/lib/api";
 
@@ -37,13 +36,17 @@ export default function ChangePassword() {
 
   return (
     <div>
-      <Breadcrumb
-        items={[
-          { label: "Home", to: "/" },
-          { label: "Account", to: "/account" },
-          { label: "Change Password" },
-        ]}
-      />
+      <nav aria-label="Breadcrumb" className="mb-4 text-sm text-gray-500">
+        <a href="/" className="hover:text-gray-900">
+          Home
+        </a>
+        <span className="mx-2">/</span>
+        <a href="/account" className="hover:text-gray-900">
+          Account
+        </a>
+        <span className="mx-2">/</span>
+        <span>Change Password</span>
+      </nav>
       <h1
         className="text-xl md:text-2xl font-bold text-[#111827] mb-4 md:mb-6"
         style={{ fontFamily: "Poppins, sans-serif" }}

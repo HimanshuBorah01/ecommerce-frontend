@@ -1,24 +1,131 @@
-import { useState } from "react";
-import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { useToast } from "@/components/ui/use-toast";
 import { Mail } from "lucide-react";
 
+function NotificationBreadcrumb({ items }) {
+  return (
+    <nav aria-label="Breadcrumb" className="text-sm text-gray-500">
+      <ol className="flex items-center gap-2">
+        {items.map((item, index) => (
+          <li key={item.label} className="flex items-center gap-2">
+            {index > 0 && <span aria-hidden="true">/</span>}
+            {item.to ? (
+              <a href={item.to} className="hover:text-[#FF5A1F]">
+                {item.label}
+              </a>
+            ) : (
+              <span aria-current="page">{item.label}</span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
+const defaultNotificationSettings = {
+  orderUpdates: true,
+  promotions: true,
+  newsletter: true,
+  priceDrops: false,
+  newArrivals: true,
+};
+
 export default function NotificationSettings() {
-  const [settings, setSettings] = useState({
-    orderUpdates: true,
-    promotions: true,
-    newsletter: true,
-    priceDrops: false,
-    newArrivals: true,
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["notification-settings"],
+    queryFn: () => api.get("/notifications/settings"),
+    retry: false,
   });
 
-  const toggle = (key) => setSettings({ ...settings, [key]: !settings[key] });
-  const [saved, setSaved] = useState(false);
+  const saveMutation = useMutation({
+    mutationKey: ["notification-settings"],
+    mutationFn: (settings) =>
+      api.patch("/notifications/settings", { notificationSettings: settings }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notification-settings"] });
+      toast({
+        title: "Settings saved",
+        description: "Your notification preferences have been updated.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to save",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
-  const handleSave = async () => {
-    // Notification settings endpoint not available in backend
-    // This is a placeholder for future implementation
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  if (isLoading) {
+    return (
+      <div>
+        <NotificationBreadcrumb
+          items={[
+            { label: "Home", to: "/" },
+            { label: "Account", to: "/account" },
+            { label: "Notification Settings" },
+          ]}
+        />
+        <div className="space-y-4 mt-4">
+          <div className="h-64 skeleton rounded-xl" />
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div>
+        <NotificationBreadcrumb
+          items={[
+            { label: "Home", to: "/" },
+            { label: "Account", to: "/account" },
+            { label: "Notification Settings" },
+          ]}
+        />
+        <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-lg">
+          Failed to load settings. Please try again.
+        </div>
+      </div>
+    );
+  }
+
+  const settings = {
+    ...defaultNotificationSettings,
+    orderUpdates:
+      data?.notificationSettings?.orderUpdates ??
+      defaultNotificationSettings.orderUpdates,
+    promotions:
+      data?.notificationSettings?.promotions ??
+      defaultNotificationSettings.promotions,
+    newsletter:
+      data?.notificationSettings?.newsletter ??
+      defaultNotificationSettings.newsletter,
+    priceDrops:
+      data?.notificationSettings?.priceDrops ??
+      defaultNotificationSettings.priceDrops,
+    newArrivals:
+      data?.notificationSettings?.newArrivals ??
+      defaultNotificationSettings.newArrivals,
+  };
+
+  const handleToggle = (key) => {
+    const updated = { ...settings, [key]: !settings[key] };
+    saveMutation.mutate(/** @type {any} */ (updated), {
+      onError: (error) => {
+        toast({
+          title: "Failed to save",
+          description: error.message,
+          variant: "destructive",
+        });
+      },
+    });
   };
 
   const groups = [
@@ -57,7 +164,7 @@ export default function NotificationSettings() {
 
   return (
     <div>
-      <Breadcrumb
+      <NotificationBreadcrumb
         items={[
           { label: "Home", to: "/" },
           { label: "Account", to: "/account" },
@@ -65,7 +172,7 @@ export default function NotificationSettings() {
         ]}
       />
       <h1
-        className="text-xl md:text-2xl font-bold text-[#111827] mb-4 md:mb-6"
+        className="text-xl md:text-2xl font-bold text-[#111827] mb-4 md:mb-6 mt-4"
         style={{ fontFamily: "Poppins, sans-serif" }}
       >
         Notification Settings
@@ -93,8 +200,9 @@ export default function NotificationSettings() {
                     <p className="text-xs text-gray-500">{item.desc}</p>
                   </div>
                   <button
-                    onClick={() => toggle(item.key)}
-                    className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${settings[item.key] ? "bg-[#FF5A1F]" : "bg-gray-200"}`}
+                    onClick={() => handleToggle(item.key)}
+                    disabled={saveMutation.isPending}
+                    className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${settings[item.key] ? "bg-[#FF5A1F]" : "bg-gray-200"} ${saveMutation.isPending ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     <span
                       className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${settings[item.key] ? "translate-x-5" : ""}`}
@@ -105,14 +213,6 @@ export default function NotificationSettings() {
             </div>
           </div>
         ))}
-        {saved && (
-          <p className="text-sm text-green-600 font-medium">
-            ✓ Settings saved successfully
-          </p>
-        )}
-        <button onClick={handleSave} className="btn-primary">
-          Save Changes
-        </button>
       </div>
     </div>
   );

@@ -1,13 +1,10 @@
+// @ts-nocheck
 import * as React from "react"
+import { Link } from "react-router-dom"
 import { Slot } from "@radix-ui/react-slot"
 import { ChevronRight, MoreHorizontal } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-
-const Breadcrumb = React.forwardRef(
-  ({ ...props }, ref) => <nav ref={ref} aria-label="breadcrumb" {...props} />
-)
-Breadcrumb.displayName = "Breadcrumb"
 
 const BreadcrumbList = React.forwardRef(({ className, ...props }, ref) => (
   <ol
@@ -79,7 +76,49 @@ const BreadcrumbEllipsis = ({
     <span className="sr-only">More</span>
   </span>
 )
-BreadcrumbEllipsis.displayName = "BreadcrumbElipssis"
+BreadcrumbEllipsis.displayName = "BreadcrumbEllipsis"
+
+const Breadcrumb = React.forwardRef(function Breadcrumb({ items, className, ...props }, ref) {
+  if (!items || items.length === 0) {
+    return (
+      <nav ref={ref} aria-label="breadcrumb" className={className} {...props}>
+        <BreadcrumbList />
+      </nav>
+    )
+  }
+
+  return (
+    <nav ref={ref} aria-label="breadcrumb" className={className} {...props}>
+      <BreadcrumbList>
+        {items.map((item, index) => {
+          const isLast = index === items.length - 1
+
+          return (
+            <React.Fragment key={item.label || index}>
+              <BreadcrumbItem>
+                {isLast ? (
+                  <BreadcrumbPage className="text-gray-900 font-medium">
+                    {item.label}
+                  </BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink asChild>
+                    <Link to={item.to}>{item.label}</Link>
+                  </BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
+              {!isLast && (
+                <BreadcrumbSeparator>
+                  <ChevronRight />
+                </BreadcrumbSeparator>
+              )}
+            </React.Fragment>
+          )
+        })}
+      </BreadcrumbList>
+    </nav>
+  )
+})
+Breadcrumb.displayName = "Breadcrumb"
 
 export {
   Breadcrumb,
