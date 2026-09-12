@@ -16,6 +16,9 @@ import {
   Check,
   ChevronRight,
   Plus,
+  Home,
+  Briefcase,
+  Tag,
 } from "lucide-react";
 import { PAYMENT_METHODS } from "@/constants";
 
@@ -27,6 +30,7 @@ const emptyAddress = {
   city: "",
   state: "",
   pinCode: "",
+  addressType: "home",
 };
 
 export default function Checkout() {
@@ -106,6 +110,7 @@ export default function Checkout() {
         state: address.state,
         pinCode: address.pinCode,
         country: "India",
+        addressType: address.addressType || "home",
         isDefault: savedAddresses.length === 0,
       };
       const data = await api.post("/addresses", payload);
@@ -322,6 +327,11 @@ export default function Checkout() {
                                   Default
                                 </span>
                               )}
+                              {addr.addressType && (
+                                <span className="ml-2 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded capitalize">
+                                  {addr.addressType}
+                                </span>
+                              )}
                             </p>
                             <p className="text-sm text-gray-600">
                               {addr.addressLine1 || addr.address_line1}
@@ -455,6 +465,33 @@ export default function Checkout() {
                         }
                         className="input-field"
                       />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="text-sm text-gray-600 mb-1 block">
+                        Address Type
+                      </label>
+                      <div className="flex gap-2">
+                        {[
+                          { value: "home", label: "Home", icon: Home },
+                          { value: "work", label: "Work", icon: Briefcase },
+                          { value: "other", label: "Other", icon: Tag },
+                        ].map((t) => (
+                          <button
+                            key={t.value}
+                            type="button"
+                            onClick={() =>
+                              setAddress({ ...address, addressType: t.value })
+                            }
+                            className={`px-4 py-2 rounded-lg text-sm font-medium border capitalize flex items-center gap-1 ${
+                              address.addressType === t.value
+                                ? "border-[#FF5A1F] text-[#FF5A1F] bg-orange-50"
+                                : "border-gray-200 text-gray-600"
+                            }`}
+                          >
+                            <t.icon size={14} /> {t.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                   <div className="flex gap-3 mt-6">

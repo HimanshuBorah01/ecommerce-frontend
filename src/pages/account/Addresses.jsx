@@ -21,6 +21,7 @@ import {
   Check,
   Home,
   Briefcase,
+  Tag,
 } from "lucide-react";
 
 const empty = {
@@ -32,7 +33,7 @@ const empty = {
   state: "",
   pinCode: "",
   country: "India",
-  type: "home",
+  addressType: "home",
 };
 
 export default function Addresses() {
@@ -89,7 +90,7 @@ export default function Addresses() {
         state: form.state,
         pinCode: form.pinCode,
         country: form.country || "India",
-        type: form.type,
+        addressType: form.addressType,
       };
 
       if (editingId) {
@@ -149,7 +150,7 @@ export default function Addresses() {
       state: addr.state || "",
       pinCode: addr.pinCode || addr.pincode || "",
       country: addr.country || "India",
-      type: addr.type || "home",
+      addressType: addr.addressType || addr.type || "home",
     });
     setEditingId(addr._id || addr.id);
     setShowForm(true);
@@ -323,23 +324,24 @@ export default function Addresses() {
                 Address Type
               </label>
               <div className="flex gap-2">
-                {["home", "work"].map((t) => (
+                {[
+                  { value: "home", icon: Home },
+                  { value: "work", icon: Briefcase },
+                  { value: "other", icon: Tag },
+                ].map((t) => (
                   <button
-                    key={t}
+                    key={t.value}
                     type="button"
-                    onClick={() => setForm({ ...form, type: t })}
+                    onClick={() =>
+                      setForm({ ...form, addressType: t.value })
+                    }
                     className={`px-4 py-2 rounded-lg text-sm font-medium border capitalize flex items-center gap-1 ${
-                      form.type === t
+                      form.addressType === t.value
                         ? "border-[#FF5A1F] text-[#FF5A1F] bg-orange-50"
                         : "border-gray-200 text-gray-600"
                     }`}
                   >
-                    {t === "home" ? (
-                      <Home size={14} />
-                    ) : (
-                      <Briefcase size={14} />
-                    )}{" "}
-                    {t}
+                    <t.icon size={14} /> {t.value}
                   </button>
                 ))}
               </div>
@@ -395,8 +397,10 @@ export default function Addresses() {
               )}
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 bg-orange-50 rounded-full flex items-center justify-center flex-shrink-0">
-                  {addr.type === "work" ? (
+                  {addr.addressType === "work" ? (
                     <Briefcase size={18} className="text-[#FF5A1F]" />
+                  ) : addr.addressType === "other" ? (
+                    <Tag size={18} className="text-[#FF5A1F]" />
                   ) : (
                     <Home size={18} className="text-[#FF5A1F]" />
                   )}
@@ -407,7 +411,7 @@ export default function Addresses() {
                       {addr.fullName || addr.full_name}
                     </p>
                     <span className="text-xs text-gray-400 capitalize bg-gray-100 px-2 py-0.5 rounded">
-                      {addr.type}
+                      {addr.addressType || addr.type}
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 mt-1">

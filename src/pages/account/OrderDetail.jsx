@@ -308,6 +308,11 @@ export default function OrderDetail() {
                 <div className="text-sm text-gray-600 space-y-1">
                   <p className="font-medium text-[#111827]">
                     {order.address.fullName}
+                    {order.address.addressType && (
+                      <span className="ml-2 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded capitalize">
+                        {order.address.addressType}
+                      </span>
+                    )}
                   </p>
                   <p>
                     {order.address.addressLine1}
