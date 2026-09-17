@@ -60,6 +60,13 @@ function getDaysSinceDelivery(order) {
   );
 }
 
+function getOrderAddress(order) {
+  if (order?.shippingAddress) return order.shippingAddress;
+  return typeof order?.address === "object" && order.address !== null
+    ? order.address
+    : null;
+}
+
 export default function Orders() {
   const [filter, setFilter] = useState("all");
   const queryClient = useQueryClient();
@@ -175,9 +182,9 @@ export default function Orders() {
       const payment = await openRazorpayCheckout({
         razorpayOrderId,
         prefill: {
-          name: order.address?.fullName || user?.name || "",
+          name: getOrderAddress(order)?.fullName || user?.name || "",
           email: user?.email || "",
-          contact: order.address?.phone || user?.phone || "",
+          contact: getOrderAddress(order)?.phone || user?.phone || "",
         },
       });
 

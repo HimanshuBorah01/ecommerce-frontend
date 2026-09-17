@@ -55,6 +55,13 @@ function getDaysSinceDelivery(order) {
   );
 }
 
+function getOrderAddress(order) {
+  if (order?.shippingAddress) return order.shippingAddress;
+  return typeof order?.address === "object" && order.address !== null
+    ? order.address
+    : null;
+}
+
 export default function OrderDetail() {
   const { id } = useParams();
   const queryClient = useQueryClient();
@@ -131,10 +138,14 @@ export default function OrderDetail() {
 
       const payment = await openRazorpayCheckout({
         razorpayOrderId,
+        amount: Number(order.totalAmount || order.total || order.totalPrice || 0),
         prefill: {
-          name: order.address?.fullName || user?.name || "",
+          name: getOrderAddress(order)?.fullName || user?.name || "",
           email: user?.email || "",
-          contact: order.address?.phone || user?.phone || "",
+          contact: getOrderAddress(order)?.phone || user?.phone || "",
+        },
+        theme: {
+          color: "#FF5A1F",
         },
       });
 
@@ -173,6 +184,7 @@ export default function OrderDetail() {
   }
 
   const order = data?.order || data;
+  const shippingAddress = getOrderAddress(order);
 
   if (!order) {
     return (
@@ -303,35 +315,28 @@ export default function OrderDetail() {
             <h2 className="font-bold text-base md:text-lg text-[#111827] mb-3 flex items-center gap-2">
               <MapPin size={18} className="text-[#FF5A1F]" /> Shipping Address
             </h2>
-            {order.address ? (
-              typeof order.address === "object" ? (
-                <div className="text-sm text-gray-600 space-y-1">
-                  <p className="font-medium text-[#111827]">
-                    {order.address.fullName}
-                    {order.address.addressType && (
-                      <span className="ml-2 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded capitalize">
-                        {order.address.addressType}
-                      </span>
-                    )}
-                  </p>
-                  <p>
-                    {order.address.addressLine1}
-                    {order.address.addressLine2
-                      ? `, ${order.address.addressLine2}`
-                      : ""}
-                  </p>
-                  <p>
-                    {order.address.city}, {order.address.state} -{" "}
-                    {order.address.pincode || order.address.pinCode}
-                  </p>
-                  <p>Phone: {order.address.phone}</p>
-                </div>
-              ) : (
-                <p className="text-sm text-gray-400">
-                  Address reference:{" "}
-                  <span className="font-mono">{order.address}</span>
+            {shippingAddress ? (
+              <div className="text-sm text-gray-600 space-y-1">
+                <p className="font-medium text-[#111827]">
+                  {shippingAddress.fullName}
+                  {shippingAddress.addressType && (
+                    <span className="ml-2 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded capitalize">
+                      {shippingAddress.addressType}
+                    </span>
+                  )}
                 </p>
-              )
+                <p>
+                  {shippingAddress.addressLine1}
+                  {shippingAddress.addressLine2
+                    ? `, ${shippingAddress.addressLine2}`
+                    : ""}
+                </p>
+                <p>
+                  {shippingAddress.city}, {shippingAddress.state} -{" "}
+                  {shippingAddress.pincode || shippingAddress.pinCode}
+                </p>
+                <p>Phone: {shippingAddress.phone}</p>
+              </div>
             ) : (
               <p className="text-sm text-gray-400">No address on file</p>
             )}
