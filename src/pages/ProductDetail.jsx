@@ -359,24 +359,24 @@ export default function ProductDetail() {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2 md:gap-3 mb-6">
+          <div className="flex gap-2 lg:gap-3 mb-6">
             <button
               onClick={handleAddToCart}
               disabled={adding || !inStock}
-              className="flex-1 flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-[#FF5A1F] text-white text-sm md:text-base font-medium rounded-lg hover:bg-[#E64A19] transition-colors disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 px-3 lg:px-6 h-12 bg-[#FF5A1F] text-white text-sm lg:text-base font-medium rounded-lg hover:bg-[#E64A19] transition-colors disabled:opacity-50"
             >
-              <ShoppingCart size={18} /> {adding ? "Adding..." : "Add to Cart"}
+              <ShoppingCart className="w-4 h-4 lg:w-4.5 lg:h-4.5" /> {adding ? "Adding..." : "Add to Cart"}
             </button>
             <button
               onClick={handleBuyNow}
               disabled={adding || !inStock}
-              className="flex-1 flex items-center justify-center gap-2 px-4 md:px-6 py-3 bg-[#111827] text-white text-sm md:text-base font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 px-3 lg:px-6 h-12 bg-[#111827] text-white text-sm lg:text-base font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
             >
               Buy Now
             </button>
             <button
               onClick={handleWishlist}
-              className="w-11 h-11 md:w-12 md:h-12 flex items-center justify-center border border-gray-200 rounded-lg hover:border-[#EC4899] hover:text-[#EC4899] transition-colors flex-shrink-0"
+              className="w-12 h-12 flex items-center justify-center border border-gray-200 rounded-lg hover:border-[#EC4899] hover:text-[#EC4899] transition-colors flex-shrink-0"
             >
               <Heart
                 size={18}
@@ -387,12 +387,12 @@ export default function ProductDetail() {
             </button>
             <button
               onClick={handleShare}
-              className="w-11 h-11 md:w-12 md:h-12 flex items-center justify-center border border-gray-200 rounded-lg hover:border-[#FF5A1F] hover:text-[#FF5A1F] transition-colors flex-shrink-0"
+              className="w-12 h-12 flex items-center justify-center border border-gray-200 rounded-lg hover:border-[#FF5A1F] hover:text-[#FF5A1F] transition-colors flex-shrink-0"
             >
               {copied ? (
-                <Check size={18} className="text-green-500" />
+                <Check size={16} className="text-green-500" />
               ) : (
-                <Share2 size={18} className="text-gray-500" />
+                <Share2 size={16} className="text-gray-500" />
               )}
             </button>
           </div>
