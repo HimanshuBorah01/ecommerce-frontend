@@ -7,6 +7,7 @@ import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuth } from "@/lib/AuthContext";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import ProductCard from "@/components/ui/ProductCard";
+import ProductSection from "@/components/home/ProductSection";
 import {
   Heart,
   ShoppingCart,
@@ -35,18 +36,18 @@ export default function ProductDetail() {
 
   const { data: productData, isLoading } = useQuery({
     queryKey: ["product", id],
-    queryFn: () => api.get(`/products/${id}`),
+    queryFn: () => api.get("/products", { id, limit: 1 }),
     enabled: !!id,
   });
 
-  const { data: relatedData } = useQuery({
+  const product = productData?.products?.[0];
+
+  const { data: relatedData, isLoading: isRelatedLoading } = useQuery({
     queryKey: ["related", id],
     queryFn: () =>
-      api.get("/products", { category: productData?.category, limit: 6 }),
-    enabled: !!productData?.category,
+      api.get("/products", { category: product?.category, limit: 6 }),
+    enabled: !!product?.category,
   });
-
-  const product = productData?.product || productData;
   useEffect(() => {
     setActiveImage(0);
     setQuantity(1);
@@ -415,6 +416,16 @@ export default function ProductDetail() {
           </div>
         </div>
       </div>
+
+      {/* Similar Products */}
+      <ProductSection
+        title="Similar Products"
+        subtitle="You might also like"
+        variant="picks"
+        products={related}
+        viewAllTo={`/search?category=${product.category}`}
+        isLoading={isRelatedLoading}
+      />
 
       {/* Tabs */}
       <div className="bg-white rounded-xl border border-gray-200 mb-8 md:mb-10">
