@@ -99,37 +99,39 @@ export default function ProductSection({
       {/* Header */}
       <div className="flex items-center justify-between mb-2 md:mb-3">
         <div className="flex items-center gap-2">
-          <motion.div
-            initial={{ rotate: -20, scale: 0.8 }}
-            whileInView={{ rotate: 0, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            className={`w-7 h-7 md:w-8 md:h-8 rounded-lg ${cfg.badge} flex items-center justify-center shadow-sm`}
-          >
-            <Sparkles size={14} className={cfg.accent} />
-          </motion.div>
-          <div>
-            <h2
-              className={`text-base md:text-lg font-bold ${cfg.headerText}`}
-              style={{ fontFamily: "Poppins, sans-serif", lineHeight: 1.2 }}
-            >
-              {title}
-            </h2>
-            {subtitle && (
-              <p className="hidden md:block text-xs text-gray-500 mt-0.5">
-                {subtitle}
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-1">
           <button
             onClick={() => scroll("left")}
             className="hidden md:flex w-8 h-8 rounded-full bg-white border border-gray-200 items-center justify-center text-gray-600 hover:border-[#FF5A1F] hover:text-[#FF5A1F] transition-colors shadow-sm"
           >
             <ChevronLeft size={16} />
           </button>
+          <div className="flex items-center gap-2">
+            <motion.div
+              initial={{ rotate: -20, scale: 0.8 }}
+              whileInView={{ rotate: 0, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              className={`w-7 h-7 md:w-8 md:h-8 rounded-lg ${cfg.badge} flex items-center justify-center shadow-sm`}
+            >
+              <Sparkles size={14} className={cfg.accent} />
+            </motion.div>
+            <div>
+              <h2
+                className={`text-base md:text-lg font-bold ${cfg.headerText}`}
+                style={{ fontFamily: "Poppins, sans-serif", lineHeight: 1.2 }}
+              >
+                {title}
+              </h2>
+              {subtitle && (
+                <p className="hidden md:block text-xs text-gray-500 mt-0.5">
+                  {subtitle}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1">
           <button
             onClick={() => scroll("right")}
             className="hidden md:flex w-8 h-8 rounded-full bg-white border border-gray-200 items-center justify-center text-gray-600 hover:border-[#FF5A1F] hover:text-[#FF5A1F] transition-colors shadow-sm"
