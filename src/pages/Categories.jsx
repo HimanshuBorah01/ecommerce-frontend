@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import NewsletterPopup from "@/components/NewsletterPopup";
-import { ArrowRight, Award, Tag, RefreshCw, Loader2, Smartphone, Shirt, Home, Gem, Dumbbell, BookOpen, Puzzle, LayoutGrid } from "lucide-react";
+import { Award, Tag, RefreshCw, Loader2, Smartphone, Shirt, Home, Gem, Dumbbell, BookOpen, Puzzle, LayoutGrid } from "lucide-react";
 import { motion } from "framer-motion";
 import { api } from "@/lib/api";
 import { toast } from "@/components/ui/use-toast";
