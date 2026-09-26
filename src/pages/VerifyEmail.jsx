@@ -41,10 +41,20 @@ export default function VerifyEmail() {
       return;
     }
 
+    const email = emailFromState || sessionStorage.getItem(STORAGE_KEY);
+    if (!email) {
+      toast({
+        title: "Email required",
+        description: "Email not found. Please go back and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setStatus("loading");
 
     try {
-      await auth.verifyEmail({ otp });
+      await auth.verifyEmail({ email, otp });
       sessionStorage.removeItem(STORAGE_KEY);
       toast({
         title: "Email verified",
