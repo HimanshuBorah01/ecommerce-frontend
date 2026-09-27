@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -21,6 +21,11 @@ export const CartProvider = ({ children }) => {
   const { isAuthenticated } = useAuth();
   const [cart, setCart] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const cartRef = useRef(cart);
+
+  useEffect(() => {
+    cartRef.current = cart;
+  }, [cart]);
 
   // Load the cart from the backend when the user is authenticated.
   const fetchCart = async () => {
@@ -71,7 +76,7 @@ export const CartProvider = ({ children }) => {
   // Clear the entire cart. The backend has no single "clear" endpoint,
   // so remove each item individually (silently ignoring failures).
   const clearCart = async () => {
-    const items = cart?.items || [];
+    const items = cartRef.current?.items || [];
     await Promise.all(
       items.map(async (item) => {
         const itemId = item._id || item.product?._id || item.product;
