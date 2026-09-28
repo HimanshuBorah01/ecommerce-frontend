@@ -36,11 +36,11 @@ export default function ProductDetail() {
 
   const { data: productData, isLoading } = useQuery({
     queryKey: ["product", id],
-    queryFn: () => api.get("/products", { id, limit: 1 }),
+    queryFn: () => api.get(`/products/${id}`),
     enabled: !!id,
   });
 
-  const product = productData?.products?.[0];
+  const product = productData;
 
   const { data: relatedData, isLoading: isRelatedLoading } = useQuery({
     queryKey: ["related", id],
