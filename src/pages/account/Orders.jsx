@@ -181,6 +181,7 @@ export default function Orders() {
 
       const payment = await openRazorpayCheckout({
         razorpayOrderId,
+        amount: order.totalAmount || order.total || order.totalPrice || 0,
         prefill: {
           name: getOrderAddress(order)?.fullName || user?.name || "",
           email: user?.email || "",
