@@ -11,7 +11,7 @@ import {
 import { api } from "@/lib/api";
 import ProductCard from "@/components/ui/ProductCard";
 import SkeletonCard from "@/components/ui/SkeletonCard";
-import { Pagination } from "@/components/ui/pagination";
+import Pagination from "@/components/ui/Paginations";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { SORT_OPTIONS } from "@/constants";
 
