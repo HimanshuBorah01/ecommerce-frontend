@@ -1,7 +1,13 @@
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClientInstance } from "@/lib/query-client";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { AuthProvider, useAuth } from "@/lib/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
@@ -32,6 +38,37 @@ import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import VerifyEmail from "@/pages/VerifyEmail";
 
+const AUTH_ROUTES = [
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+  "/verify-email",
+];
+
+const isAuthRoute = (pathname) =>
+  AUTH_ROUTES.some((route) => pathname.startsWith(route));
+
+// Route-level guard: redirect logged-out visitors to login, preserving the
+// requested path in `returnTo` so the auth pages can restore it after login.
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    return (
+      <Navigate
+        to={`/login?returnTo=${encodeURIComponent(
+          location.pathname + location.search,
+        )}`}
+        replace
+      />
+    );
+  }
+
+  return children;
+};
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, authError, navigateToLogin } = useAuth();
 
@@ -49,14 +86,7 @@ const AuthenticatedApp = () => {
     if (authError.type === "auth_required") {
       const path =
         typeof window !== "undefined" ? window.location.pathname : "";
-      const isAuthRoute = [
-        "/login",
-        "/register",
-        "/forgot-password",
-        "/reset-password",
-        "/verify-email",
-      ].some((p) => path.startsWith(p));
-      if (!isAuthRoute) {
+      if (!isAuthRoute(path)) {
         navigateToLogin();
         return null;
       }
@@ -78,9 +108,30 @@ const AuthenticatedApp = () => {
         <Route path="/search" element={<SearchResults />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/product/:id" element={<ProductDetail />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/wishlist" element={<Wishlist />} />
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute>
+              <Cart />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <Checkout />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/wishlist"
+          element={
+            <ProtectedRoute>
+              <Wishlist />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/info/:slug" element={<InfoPage />} />
         <Route path="/help-center" element={<HelpCenter />} />
         <Route path="/server-error" element={<ServerError />} />
