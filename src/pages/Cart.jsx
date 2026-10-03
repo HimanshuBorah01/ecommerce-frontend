@@ -9,7 +9,6 @@ import {
   Plus,
   ShoppingBag,
   ArrowRight,
-  Tag,
   Shield,
   Truck,
 } from "lucide-react";
@@ -20,9 +19,6 @@ export default function Cart() {
   const { isAuthenticated } = useAuth();
   const { cart, cartCount, cartTotal, isLoading, updateQuantity, removeItem } =
     useCart();
-  const [coupon, setCoupon] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [couponError, setCouponError] = useState("");
 
   if (!isAuthenticated) {
     return (
@@ -56,24 +52,8 @@ export default function Cart() {
 
   const items = cart?.items || [];
   const subtotal = cart?.totalPrice || cart?.total || cartTotal || 0;
-  const discount = appliedCoupon?.discount || 0;
   const shipping = subtotal > 499 ? 0 : 49;
-  const total = Math.max(0, subtotal - discount) + shipping;
-
-  const applyCoupon = () => {
-    setCouponError("");
-    if (!coupon.trim()) return;
-    if (coupon.toUpperCase() === "SHOPY10") {
-      setAppliedCoupon({
-        code: "SHOPY10",
-        discount: Math.round(subtotal * 0.1),
-      });
-    } else if (coupon.toUpperCase() === "FLAT100" && subtotal > 500) {
-      setAppliedCoupon({ code: "FLAT100", discount: 100 });
-    } else {
-      setCouponError("Invalid coupon code or minimum amount not met");
-    }
-  };
+  const total = subtotal + shipping;
 
   if (items.length === 0) {
     return (
@@ -196,39 +176,6 @@ export default function Cart() {
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <h3 className="font-bold text-[#111827] mb-4">Order Summary</h3>
 
-            {/* Coupon */}
-            <div className="mb-4 pb-4 border-b border-gray-100">
-              <div className="flex gap-2">
-                <div className="flex-1 min-w-0 flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg">
-                  <Tag size={14} className="text-gray-400 flex-shrink-0" />
-                  <input
-                    type="text"
-                    value={coupon}
-                    onChange={(e) => setCoupon(e.target.value)}
-                    placeholder="Coupon code"
-                    className="flex-1 min-w-0 text-sm focus:outline-none bg-transparent"
-                  />
-                </div>
-                <button
-                  onClick={applyCoupon}
-                  className="px-4 py-2 bg-[#111827] text-white text-sm font-medium rounded-lg hover:bg-gray-800 flex-shrink-0"
-                >
-                  Apply
-                </button>
-              </div>
-              {couponError && (
-                <p className="text-xs text-red-500 mt-1">{couponError}</p>
-              )}
-              {appliedCoupon && (
-                <p className="text-xs text-green-600 mt-1">
-                  ✓ Coupon {appliedCoupon.code} applied
-                </p>
-              )}
-              <p className="text-xs text-gray-400 mt-1">
-                Try: SHOPY10 or FLAT100
-              </p>
-            </div>
-
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-500">Subtotal</span>
@@ -236,12 +183,6 @@ export default function Cart() {
                   ₹{subtotal.toLocaleString()}
                 </span>
               </div>
-              {discount > 0 && (
-                <div className="flex justify-between text-green-600">
-                  <span>Discount</span>
-                  <span>-₹{discount.toLocaleString()}</span>
-                </div>
-              )}
               <div className="flex justify-between">
                 <span className="text-gray-500">Shipping</span>
                 <span className="font-medium">
