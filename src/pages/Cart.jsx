@@ -53,7 +53,8 @@ export default function Cart() {
   const items = cart?.items || [];
   const subtotal = cart?.totalPrice || cart?.total || cartTotal || 0;
   const shipping = subtotal > 499 ? 0 : 49;
-  const total = subtotal + shipping;
+  const tax = Math.round(subtotal * 0.05);
+  const total = subtotal + shipping + tax;
 
   if (items.length === 0) {
     return (
@@ -195,6 +196,12 @@ export default function Cart() {
                   shipping
                 </p>
               )}
+              <div className="flex justify-between">
+                <span className="text-gray-500">Tax (5%)</span>
+                <span className="font-medium">
+                  ₹{tax.toLocaleString()}
+                </span>
+              </div>
             </div>
 
             <div className="flex justify-between pt-3 mt-3 border-t border-gray-100">
