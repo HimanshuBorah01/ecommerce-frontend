@@ -74,9 +74,11 @@ export const CartProvider = ({ children }) => {
   };
 
   // Clear the entire cart. The backend has no single "clear" endpoint,
-  // so remove each item individually (silently ignoring failures).
+  // so remove each item individually.
   const clearCart = async () => {
     const items = cartRef.current?.items || [];
+    const failedIds = [];
+
     await Promise.all(
       items.map(async (item) => {
         const itemId = item._id || item.product?._id || item.product;
@@ -84,12 +86,24 @@ export const CartProvider = ({ children }) => {
         try {
           await api.delete(`/cart/${itemId}`);
         } catch {
-          /* ignore individual failures */
+          failedIds.push(itemId);
         }
       }),
     );
+
+    // A partial clear must not be reported as success or hidden by clearing
+    // local state — re-sync with the backend so remaining items stay visible.
+    if (failedIds.length > 0) {
+      await fetchCart();
+      return {
+        success: false,
+        failedIds,
+        message: "Some cart items could not be removed. Please try again.",
+      };
+    }
+
     setCart(null);
-    return { success: true };
+    return { success: true, failedIds: [] };
   };
 
   const cartCount =
