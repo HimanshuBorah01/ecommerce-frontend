@@ -60,12 +60,17 @@ const makeApiUrl = (path) => {
     baseWithoutLeadingSlash &&
     normalizedPath.startsWith(baseWithoutLeadingSlash)
   ) {
-    return new URL(`/${normalizedPath}`, window.location.origin).toString();
+    // Use relative URL when window is unavailable (SSR/tests)
+    const origin =
+      typeof window !== "undefined" ? window.location.origin : "";
+    return new URL(`/${normalizedPath}`, origin).toString();
   }
 
+  const origin =
+    typeof window !== "undefined" ? window.location.origin : "";
   return new URL(
     `${normalizedBase}/${normalizedPath}`,
-    window.location.origin,
+    origin,
   ).toString();
 };
 
@@ -92,8 +97,9 @@ const refreshAccessToken = async () => {
 };
 
 const apiFetch = async (path, options = {}) => {
+  // path is expected to be a fully-resolved URL string.
   const doFetch = () =>
-    fetch(makeApiUrl(path), {
+    fetch(path, {
       ...options,
       credentials: "include", // send refresh cookie with every request
       headers: buildHeaders(options.headers),
