@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -37,8 +37,18 @@ function FilterSection({ title, children, defaultOpen = true }) {
 
 export default function SearchResults() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [page, setPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
+  // Derive the current page from the URL so it survives reloads and shared links.
+  const page = Number(searchParams.get("page")) || 1;
+
+  // Update the page param while preserving all other search params.
+  const setPageParam = (newPage) => {
+    const p = new URLSearchParams(searchParams);
+    if (newPage && newPage > 1) p.set("page", newPage);
+    else p.delete("page");
+    setSearchParams(p);
+  };
 
   const q = searchParams.get("q") || "";
   const category = searchParams.get("category") || "";
@@ -65,7 +75,7 @@ export default function SearchResults() {
     if (max) p.set("maxPrice", max);
     else p.delete("maxPrice");
     setSearchParams(p);
-    setPage(1);
+    setPageParam(1);
   };
 
   const applyCustomPrice = () => {
@@ -110,8 +120,16 @@ export default function SearchResults() {
     keepPreviousData: true,
   });
 
+  const isFirstRender = useRef(true);
+
+  // When the active search/filter criteria change, reset to the first page.
+  // Skip the initial mount so a page supplied in the URL is respected.
   useEffect(() => {
-    setPage(1);
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    setPageParam(1);
   }, [q, category, selectedBrand]);
 
   const products = data?.products || [];
@@ -195,7 +213,7 @@ export default function SearchResults() {
     if (val) p.set(key, val);
     else p.delete(key);
     setSearchParams(p);
-    setPage(1);
+    setPageParam(1);
   };
 
   const clearAll = () => {
@@ -542,7 +560,7 @@ export default function SearchResults() {
               <Pagination
                 currentPage={page}
                 totalPages={totalPages}
-                onPageChange={setPage}
+                onPageChange={setPageParam}
               />
             </>
           )}
