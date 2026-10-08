@@ -38,15 +38,9 @@ const empty = {
 
 export default function Addresses() {
   const queryClient = useQueryClient();
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["addresses"],
-    queryFn: async () => {
-      try {
-        return await api.get("/addresses");
-      } catch (error) {
-        return [];
-      }
-    },
+    queryFn: () => api.get("/addresses"),
   });
 
   // Handle different response formats from backend
@@ -372,6 +366,22 @@ export default function Addresses() {
           {[...Array(2)].map((_, i) => (
             <div key={i} className="h-40 skeleton rounded-xl" />
           ))}
+        </div>
+      ) : error ? (
+        /* Error State */
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+          <p className="text-red-600 font-medium mb-2">
+            Could not load saved addresses
+          </p>
+          <p className="text-sm text-red-500 mb-4">
+            {error.message || "Please try again later."}
+          </p>
+          <button
+            onClick={() => refetch()}
+            className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700"
+          >
+            Retry
+          </button>
         </div>
       ) : addresses.length === 0 && !showForm ? (
         /* Empty State */
