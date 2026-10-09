@@ -12,7 +12,6 @@ import {
   Shield,
   Truck,
 } from "lucide-react";
-import { useState } from "react";
 
 export default function Cart() {
   const navigate = useNavigate();
