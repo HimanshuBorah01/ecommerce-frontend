@@ -171,7 +171,7 @@ export default function Addresses() {
 
   const setDefault = async (id) => {
     try {
-      await api.put(`/addresses/${id}`, { isDefault: true });
+      await api.patch(`/addresses/${id}`, { isDefault: true });
       await refetch();
       showMessage("Default address updated!", "success");
     } catch (err) {
