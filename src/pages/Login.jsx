@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import auth from "@/api/authClient";
 import { useAuth } from "@/lib/AuthContext";
@@ -17,11 +17,6 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const returnTo = safeReturnTo();
-  const debugMode =
-    new URLSearchParams(window.location.search).get("debug") === "1";
-  const [debugInfo, setDebugInfo] = useState(null);
-  const mountCount = useRef(0);
-  mountCount.current += 1;
 
   const { checkUserAuth } = useAuth();
 
@@ -39,7 +34,6 @@ export default function Login() {
             ? "/"
             : returnTo;
         navigate(target, { replace: true });
-        if (debugMode) setDebugInfo({ target, current, returnTo });
       } catch (navErr) {
         navigate("/", { replace: true });
       }
@@ -56,27 +50,6 @@ export default function Login() {
       setLoading(false);
     }
   };
-
-  const debugSnapshot = (() => {
-    if (!debugMode) return null;
-    const token =
-      typeof window !== "undefined"
-        ? window.localStorage.getItem("app_access_token")
-        : null;
-    const lastLogin =
-      typeof window !== "undefined" ? window.__lastAuthLoginResponse : null;
-    const sessionKeys =
-      typeof window !== "undefined" ? { ...window.sessionStorage } : null;
-    return {
-      mountCount: mountCount.current,
-      current: window.location.pathname + window.location.search,
-      returnTo,
-      token,
-      lastLogin,
-      sessionKeys,
-      debugInfo,
-    };
-  })();
 
   return (
     <AuthSplitLayout
