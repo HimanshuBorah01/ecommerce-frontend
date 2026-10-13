@@ -60,18 +60,24 @@ const makeApiUrl = (path) => {
     baseWithoutLeadingSlash &&
     normalizedPath.startsWith(baseWithoutLeadingSlash)
   ) {
-    // Use relative URL when window is unavailable (SSR/tests)
-    const origin =
-      typeof window !== "undefined" ? window.location.origin : "";
-    return new URL(`/${normalizedPath}`, origin).toString();
+    // In browser: resolve against window.location.origin.
+    // In SSR/Node: the path is already an absolute path (starts with /),
+    // so return it as-is without the URL constructor which would produce
+    // a protocol-relative //... URL with an empty origin.
+    if (typeof window !== "undefined") {
+      return new URL(`/${normalizedPath}`, window.location.origin).toString();
+    }
+    return `/${normalizedPath}`;
   }
 
-  const origin =
-    typeof window !== "undefined" ? window.location.origin : "";
-  return new URL(
-    `${normalizedBase}/${normalizedPath}`,
-    origin,
-  ).toString();
+  if (typeof window !== "undefined") {
+    return new URL(
+      `${normalizedBase}/${normalizedPath}`,
+      window.location.origin,
+    ).toString();
+  }
+  // SSR/Node: return the path directly — it's already an absolute path.
+  return `${normalizedBase}/${normalizedPath}`;
 };
 
 // Refresh the access token using the refresh cookie. Returns true on success.
