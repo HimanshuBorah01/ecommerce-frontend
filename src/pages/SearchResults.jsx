@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import {
   SlidersHorizontal,
   ChevronDown,
@@ -117,7 +117,7 @@ export default function SearchResults() {
       if (selectedBrand) params.brand = selectedBrand;
       return api.get("/products", params);
     },
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const isFirstRender = useRef(true);
