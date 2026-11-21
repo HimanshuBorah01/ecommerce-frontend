@@ -125,7 +125,7 @@ export default function Orders() {
   const cancelMutation = useMutation({
     mutationFn: (orderId) => api.put(`/orders/${orderId}/cancel`),
     onSuccess: () => {
-      queryClient.invalidateQueries(["orders"]);
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       setActiveOrderId(null);
       toast({
         title: "Order cancelled",
@@ -145,7 +145,7 @@ export default function Orders() {
     mutationFn: (orderId) =>
       api.put(`/orders/${orderId}/return`, { reason: returnReason }),
     onSuccess: () => {
-      queryClient.invalidateQueries(["orders"]);
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       setActiveOrderId(null);
       setReturnReason("");
       toast({
@@ -198,7 +198,7 @@ export default function Orders() {
       return order;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(["orders"]);
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
       toast({
         title: "Payment successful",
         description: "Your order has been confirmed.",

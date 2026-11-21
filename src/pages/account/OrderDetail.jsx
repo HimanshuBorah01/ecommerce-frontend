@@ -79,8 +79,8 @@ export default function OrderDetail() {
   const cancelMutation = useMutation({
     mutationFn: () => api.put(`/orders/${id}/cancel`),
     onSuccess: () => {
-      queryClient.invalidateQueries(["orders"]);
-      queryClient.invalidateQueries(["order", id]);
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["order", id] });
       setShowCancelDialog(false);
       toast({
         title: "Order cancelled",
@@ -100,8 +100,8 @@ export default function OrderDetail() {
     mutationFn: () =>
       api.put(`/orders/${id}/return`, { reason: returnReason }),
     onSuccess: () => {
-      queryClient.invalidateQueries(["orders"]);
-      queryClient.invalidateQueries(["order", id]);
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["order", id] });
       setShowReturnDialog(false);
       setReturnReason("");
       toast({
@@ -158,8 +158,8 @@ export default function OrderDetail() {
       return order;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(["orders"]);
-      queryClient.invalidateQueries(["order", id]);
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["order", id] });
       toast({
         title: "Payment successful",
         description: "Your order has been confirmed.",
